@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import { ProfileMenu } from './ProfileMenu.jsx'
 
 export function Navbar() {
   const navigate = useNavigate()
@@ -50,12 +51,7 @@ export function Navbar() {
                   </NavLink>
                 </>
               ) : null}
-              <span className="nav__meta" title={user.email}>
-                {user.name}
-              </span>
-              <button className="btn btn--ghost" type="button" onClick={onSignOut}>
-                Sign out
-              </button>
+              <ProfileMenu user={user} onSignOut={onSignOut} />
             </>
           ) : (
             <>

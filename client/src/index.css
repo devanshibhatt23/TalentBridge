@@ -98,6 +98,10 @@ a:hover {
   padding: 18px;
 }
 
+.card:hover {
+  border-color: rgba(47, 129, 247, 0.20);
+}
+
 .nav {
   position: sticky;
   top: 0;
@@ -145,6 +149,97 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+.profilemenu {
+  position: relative;
+}
+
+.avatar-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 999px;
+  padding: 4px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.avatar-btn:hover {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar-btn:focus-visible {
+  outline: 3px solid rgba(47, 129, 247, 0.35);
+  outline-offset: 2px;
+}
+
+.avatar {
+  height: 32px;
+  width: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.2px;
+  background: linear-gradient(180deg, rgba(47, 129, 247, 0.24), transparent);
+  border: 1px solid rgba(47, 129, 247, 0.30);
+  color: var(--text);
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 240px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(13, 17, 23, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.menu__header {
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu__name {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.menu__meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu__item {
+  width: 100%;
+  text-align: left;
+  display: block;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.menu__item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu__danger {
+  color: #ffa198;
 }
 
 .navlink {
@@ -392,12 +487,26 @@ select.input {
   font-size: 18px;
 }
 
-.list-card__title a {
+.list-card--link {
+  display: block;
   text-decoration: none;
+  color: inherit;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
 }
 
-.list-card__title a:hover {
-  text-decoration: underline;
+.list-card--link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(47, 129, 247, 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.03)
+  );
+}
+
+.list-card--link:focus-visible {
+  outline: 3px solid rgba(47, 129, 247, 0.35);
+  outline-offset: 2px;
 }
 
 .list-card__meta {
