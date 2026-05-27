@@ -1,0 +1,128 @@
+{
+  "baseUrl": "/api",
+  "endpoints": {
+    "health": {
+      "method": "GET",
+      "path": "/health",
+      "auth": false,
+      "description": "API health check"
+    },
+    "auth": {
+      "register": {
+        "method": "POST",
+        "path": "/auth/register",
+        "auth": false,
+        "body": ["name", "email", "password", "role", "phone", "company"],
+        "description": "Create account (company required for recruiter)"
+      },
+      "login": {
+        "method": "POST",
+        "path": "/auth/login",
+        "auth": false,
+        "body": ["email", "password"],
+        "description": "Login and receive JWT"
+      },
+      "me": {
+        "method": "GET",
+        "path": "/auth/me",
+        "auth": true,
+        "description": "Current user profile"
+      }
+    },
+    "jobs": {
+      "list": {
+        "method": "GET",
+        "path": "/jobs",
+        "auth": false,
+        "query": ["keyword", "location", "jobType", "skills", "status", "page", "limit", "sortBy", "order"],
+        "description": "List/search open jobs"
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/jobs/:id",
+        "auth": false,
+        "description": "Single job details"
+      },
+      "myJobs": {
+        "method": "GET",
+        "path": "/jobs/recruiter/my-jobs",
+        "auth": true,
+        "roles": ["recruiter"],
+        "description": "Jobs posted by logged-in recruiter"
+      },
+      "create": {
+        "method": "POST",
+        "path": "/jobs",
+        "auth": true,
+        "roles": ["recruiter"],
+        "body": ["title", "company", "description", "requirements", "location", "jobType", "salary", "skills", "additionalDetails", "deadline", "openings"],
+        "description": "Post a new job"
+      },
+      "update": {
+        "method": "PUT",
+        "path": "/jobs/:id",
+        "auth": true,
+        "roles": ["recruiter"],
+        "description": "Update own job"
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/jobs/:id",
+        "auth": true,
+        "roles": ["recruiter"],
+        "description": "Delete own job"
+      }
+    },
+    "applications": {
+      "apply": {
+        "method": "POST",
+        "path": "/applications",
+        "auth": true,
+        "roles": ["candidate"],
+        "body": ["jobId", "coverLetter"],
+        "description": "Apply to a job"
+      },
+      "myApplications": {
+        "method": "GET",
+        "path": "/applications/my-applications",
+        "auth": true,
+        "roles": ["candidate"],
+        "description": "Candidate application list"
+      },
+      "jobApplications": {
+        "method": "GET",
+        "path": "/applications/job/:jobId",
+        "auth": true,
+        "roles": ["recruiter"],
+        "description": "Applications for a job"
+      },
+      "updateStatus": {
+        "method": "PUT",
+        "path": "/applications/:id/status",
+        "auth": true,
+        "roles": ["recruiter"],
+        "body": ["status", "note"],
+        "description": "Update application status (audit trail)"
+      }
+    },
+    "candidates": {
+      "search": {
+        "method": "GET",
+        "path": "/candidates/search",
+        "auth": true,
+        "roles": ["recruiter"],
+        "query": ["keyword", "location", "skills", "page", "limit"],
+        "description": "Search candidates"
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/candidates/:id",
+        "auth": true,
+        "roles": ["recruiter"],
+        "description": "Candidate profile"
+      }
+    }
+  },
+  "applicationStatuses": ["applied", "screening", "interviewing", "offered", "hired", "rejected", "withdrawn"],
+  "jobTypes": ["full-time", "part-time", "internship", "contract", "remote"]
+}
