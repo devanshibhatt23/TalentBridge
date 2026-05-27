@@ -15,6 +15,7 @@ import { CreateJob } from './pages/CreateJob.jsx'
 import { MyApplications } from './pages/MyApplications.jsx'
 import { Candidates } from './pages/Candidates.jsx'
 import { CandidateProfile } from './pages/CandidateProfile.jsx'
+import { Profile } from './pages/Profile.jsx'
 
 function App() {
   return (
@@ -90,6 +91,15 @@ function App() {
           element={
             <ProtectedRoute roles={['recruiter']}>
               <CandidateProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

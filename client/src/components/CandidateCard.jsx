@@ -5,10 +5,8 @@ export function CandidateCard({ candidate }) {
   const skills = candidate.profile?.skills || []
 
   return (
-    <article className="card list-card">
-      <h3 className="list-card__title">
-        <Link to={`/candidates/${id}`}>{candidate.name}</Link>
-      </h3>
+    <Link to={`/candidates/${id}`} className="card list-card list-card--link">
+      <h3 className="list-card__title">{candidate.name}</h3>
       {candidate.profile?.headline ? (
         <p className="muted">{candidate.profile.headline}</p>
       ) : null}
@@ -24,6 +22,6 @@ export function CandidateCard({ candidate }) {
           ))}
         </div>
       ) : null}
-    </article>
+    </Link>
   )
 }

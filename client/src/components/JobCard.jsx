@@ -1,15 +1,13 @@
-import { Link } from 'react-router-dom'
 import { StatusBadge } from './StatusBadge.jsx'
+import { Link } from 'react-router-dom'
 
 export function JobCard({ job }) {
   const id = job._id || job.id
   return (
-    <article className="card list-card">
+    <Link to={`/jobs/${id}`} className="card list-card list-card--link">
       <div className="list-card__top">
         <div>
-          <h3 className="list-card__title">
-            <Link to={`/jobs/${id}`}>{job.title}</Link>
-          </h3>
+          <h3 className="list-card__title">{job.title}</h3>
           <p className="muted list-card__meta">
             {job.company} · {job.location} · {job.jobType}
           </p>
@@ -26,6 +24,6 @@ export function JobCard({ job }) {
           ))}
         </div>
       ) : null}
-    </article>
+    </Link>
   )
 }
