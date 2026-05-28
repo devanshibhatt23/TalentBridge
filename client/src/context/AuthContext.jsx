@@ -8,6 +8,7 @@ import {
   setStoredToken,
   getStoredToken,
 } from '../services/api.js'
+import { connectSocket, disconnectSocket } from '../socket.js'
 
 const AuthContext = createContext(null)
 
@@ -53,6 +54,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     loadSession()
   }, [loadSession])
+
+  useEffect(() => {
+    if (user) connectSocket()
+    else disconnectSocket()
+  }, [user])
 
   const login = useCallback(async ({ email, password }) => {
     setError(null)

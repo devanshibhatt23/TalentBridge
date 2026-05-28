@@ -121,6 +121,27 @@
         "roles": ["recruiter"],
         "description": "Candidate profile"
       }
+    },
+    "conversations": {
+      "list": {
+        "method": "GET",
+        "path": "/conversations",
+        "auth": true,
+        "description": "List my conversations"
+      },
+      "getOrCreate": {
+        "method": "POST",
+        "path": "/conversations",
+        "auth": true,
+        "body": ["participantId"],
+        "description": "Get or create a 1:1 conversation"
+      },
+      "messages": {
+        "method": "GET",
+        "path": "/conversations/:id/messages",
+        "auth": true,
+        "description": "Fetch messages for a conversation"
+      }
     }
   },
   "applicationStatuses": ["applied", "screening", "interviewing", "offered", "hired", "rejected", "withdrawn"],

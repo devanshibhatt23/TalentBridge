@@ -16,6 +16,7 @@ import { MyApplications } from './pages/MyApplications.jsx'
 import { Candidates } from './pages/Candidates.jsx'
 import { CandidateProfile } from './pages/CandidateProfile.jsx'
 import { Profile } from './pages/Profile.jsx'
+import { Messages } from './pages/Messages.jsx'
 
 function App() {
   return (
@@ -100,6 +101,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
             </ProtectedRoute>
           }
         />
