@@ -206,6 +206,35 @@ const updateApplicationStatus = async (req, res) => {
     // Mongoose optimistic concurrency will automatically check the version on save
     await application.save();
 
+    // Real-time notification (Socket.IO): push status changes instantly
+    try {
+      const { getIO, userRoom } = require('../socket');
+      const io = getIO();
+
+      io.to(userRoom(req.user._id.toString())).emit('application:statusChanged', {
+        applicationId: application._id,
+        jobId: application.job?._id,
+        candidateId: application.candidate,
+        status: application.status,
+        changedBy: req.user._id,
+        changedAt: new Date().toISOString(),
+        note: note || `Status updated to ${status}`,
+      });
+
+      io.to(userRoom(application.candidate.toString())).emit('application:statusChanged', {
+        applicationId: application._id,
+        jobId: application.job?._id,
+        candidateId: application.candidate,
+        status: application.status,
+        changedBy: req.user._id,
+        changedAt: new Date().toISOString(),
+        note: note || `Status updated to ${status}`,
+      });
+    } catch (socketErr) {
+      // If Socket.IO isn't available, we still succeed via HTTP.
+      console.warn('Socket notification failed:', socketErr?.message || socketErr);
+    }
+
     res.status(200).json({
       success: true,
       message: `Application status updated to ${status}.`,

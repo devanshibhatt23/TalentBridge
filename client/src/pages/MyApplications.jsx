@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 import { fetchMyApplications } from '../services/api.js'
+import { getSocket } from '../socket.js'
 
 export function MyApplications() {
   const [applications, setApplications] = useState([])
@@ -21,6 +22,19 @@ export function MyApplications() {
       }
     }
     load()
+  }, [])
+
+  useEffect(() => {
+    const s = getSocket()
+    function onStatusChanged() {
+      fetchMyApplications()
+        .then((res) => setApplications(res.data?.applications || []))
+        .catch(() => {})
+    }
+    s.on('application:statusChanged', onStatusChanged)
+    return () => {
+      s.off('application:statusChanged', onStatusChanged)
+    }
   }, [])
 
   return (
