@@ -147,6 +147,22 @@ export async function fetchCandidateById(id) {
   return data
 }
 
+// --- Conversations ---
+export async function fetchConversations() {
+  const { data } = await api.get(endpointPath('conversations', 'list'))
+  return data
+}
+
+export async function getOrCreateConversation(participantId) {
+  const { data } = await api.post(endpointPath('conversations', 'getOrCreate'), { participantId })
+  return data
+}
+
+export async function fetchConversationMessages(id) {
+  const { data } = await api.get(endpointPath('conversations', 'messages', { id }))
+  return data
+}
+
 export function dashboardPathForRole(role) {
   return role === 'recruiter' ? '/recruiter-dashboard' : '/candidate-dashboard'
 }
