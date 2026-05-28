@@ -36,6 +36,9 @@ export function Navbar() {
               <NavLink className="navlink" to="/jobs">
                 Jobs
               </NavLink>
+              <NavLink className="navlink" to="/messages">
+                Messages
+              </NavLink>
               {user.role === 'candidate' ? (
                 <NavLink className="navlink" to="/my-applications">
                   Applications
