@@ -4,6 +4,7 @@ import {
   fetchConversationMessages,
   fetchConversations,
   getOrCreateConversation,
+  searchUsers,
 } from '../services/api.js'
 import { connectSocket } from '../socket.js'
 
@@ -30,7 +31,15 @@ export function Messages() {
   const [messages, setMessages] = useState([])
   const [compose, setCompose] = useState('')
   const [composeType, setComposeType] = useState('text')
-  const [startChatUserId, setStartChatUserId] = useState('')
+  
+  // New search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchRole, setSearchRole] = useState('')
+  const [searchCompany, setSearchCompany] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [showSearchResults, setShowSearchResults] = useState(false)
+  
   const [error, setError] = useState(null)
 
   const socketRef = useRef(null)
@@ -54,6 +63,53 @@ export function Messages() {
     }
     const res = await fetchConversationMessages(conversationId)
     setMessages(res.data?.messages || [])
+  }
+
+  async function handleSearch() {
+    if (!searchQuery.trim() && !searchRole && !searchCompany) {
+      setSearchResults([])
+      return
+    }
+
+    try {
+      setSearchLoading(true)
+      setError(null)
+      const res = await searchUsers({
+        keyword: searchQuery,
+        role: searchRole,
+        company: searchCompany,
+        limit: 20,
+      })
+      setSearchResults(res.data?.users || [])
+      setShowSearchResults(true)
+    } catch (e) {
+      setError(e.message || 'Failed to search users.')
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  async function handleSelectUser(selectedUser) {
+    try {
+      setError(null)
+      const res = await getOrCreateConversation(selectedUser.id)
+      const convo = res.data?.conversation
+      if (convo) {
+        setConversations((prev) => {
+          const exists = prev.some((c) => c.id === convo.id)
+          const next = exists ? prev : [convo, ...prev]
+          return next
+        })
+        setActiveId(convo.id)
+        setSearchQuery('')
+        setSearchRole('')
+        setSearchCompany('')
+        setSearchResults([])
+        setShowSearchResults(false)
+      }
+    } catch (e2) {
+      setError(e2.message || 'Failed to start chat.')
+    }
   }
 
   useEffect(() => {
@@ -136,27 +192,6 @@ export function Messages() {
     }
   }, [activeId])
 
-  async function onStartChat(e) {
-    e.preventDefault()
-    if (!startChatUserId.trim()) return
-    try {
-      setError(null)
-      const res = await getOrCreateConversation(startChatUserId.trim())
-      const convo = res.data?.conversation
-      if (convo) {
-        setConversations((prev) => {
-          const exists = prev.some((c) => c.id === convo.id)
-          const next = exists ? prev : [convo, ...prev]
-          return next
-        })
-        setActiveId(convo.id)
-        setStartChatUserId('')
-      }
-    } catch (e2) {
-      setError(e2.message || 'Failed to start chat.')
-    }
-  }
-
   async function onSend(e) {
     e.preventDefault()
     const s = socketRef.current
@@ -191,23 +226,94 @@ export function Messages() {
 
       <div className="chat">
         <aside className="chat__sidebar">
-          <form className="chat__start" onSubmit={onStartChat}>
-            <label className="label" htmlFor="startChatUserId">
-              Start a new chat (enter userId)
-            </label>
-            <div className="row">
+          <div className="chat__start">
+            <label className="label">Search users to start a chat</label>
+            
+            <div style={{ marginBottom: '1rem' }}>
               <input
-                id="startChatUserId"
                 className="input"
-                value={startChatUserId}
-                onChange={(e) => setStartChatUserId(e.target.value)}
-                placeholder="e.g. 6656f0... (MongoDB _id)"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Search by name or email…"
+                style={{ marginBottom: '0.5rem' }}
               />
-              <button className="btn btn--primary" type="submit">
-                Start
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <select
+                  className="input"
+                  value={searchRole}
+                  onChange={(e) => setSearchRole(e.target.value)}
+                  aria-label="Filter by role"
+                >
+                  <option value="">All roles</option>
+                  <option value="recruiter">Recruiter</option>
+                  <option value="candidate">Candidate</option>
+                </select>
+
+                <input
+                  className="input"
+                  type="text"
+                  value={searchCompany}
+                  onChange={(e) => setSearchCompany(e.target.value)}
+                  placeholder="Filter by company…"
+                  aria-label="Filter by company"
+                />
+              </div>
+
+              <button 
+                className="btn btn--primary" 
+                onClick={handleSearch}
+                disabled={searchLoading}
+                style={{ width: '100%' }}
+              >
+                {searchLoading ? 'Searching…' : 'Search'}
               </button>
             </div>
-          </form>
+
+            {showSearchResults && (
+              <div style={{
+                border: '1px solid var(--color-border)',
+                borderRadius: '0.5rem',
+                padding: '0.5rem',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                marginBottom: '1rem'
+              }}>
+                {searchResults.length === 0 ? (
+                  <div className="muted" style={{ padding: '0.5rem' }}>No users found</div>
+                ) : (
+                  searchResults.map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => handleSelectUser(u)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '0.75rem',
+                        marginBottom: '0.25rem',
+                        textAlign: 'left',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '0.25rem',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-surface-hover)'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{ fontWeight: 'bold' }}>{u.name}</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                        {u.email}
+                        {u.role && ` • ${u.role}`}
+                        {u.company && ` • ${u.company}`}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="chat__list" aria-label="Conversation list">
             {loading ? <div className="muted">Loading…</div> : null}
