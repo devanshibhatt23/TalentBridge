@@ -18,6 +18,7 @@ const jobRoutes = require('./routes/jobs');
 const applicationRoutes = require('./routes/applications');
 const candidateRoutes = require('./routes/candidates');
 const conversationRoutes = require('./routes/conversations');
+const userRoutes = require('./routes/users');
 
 // Initialize Express app
 const app = express();
@@ -42,22 +43,14 @@ app.use(
 app.use(express.json());
 
 // ============================================
-// DATABASE CONNECTION
-// ============================================
-// Connect to MongoDB using the function we defined in config/db.js
-// We wrap it in an async IIFE (Immediately Invoked Function Expression)
-// or just call it directly since it handles its own errors
-connectDB();
-
-// ============================================
 // ROUTES
 // ============================================
-// Mount the routes on specific base URLs
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/conversations', conversationRoutes);
+app.use('/api/users', userRoutes);
 
 // Simple health check route
 app.get('/api/health', (req, res) => {
@@ -80,16 +73,23 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================
-// START SERVER
+// DATABASE CONNECTION
 // ============================================
+// Start the HTTP server only after the database connection succeeds.
 const PORT = process.env.PORT || 5000;
-
 const server = http.createServer(app);
 
 initSocket(server, {
   corsOrigin: allowedOrigins.length ? allowedOrigins : true,
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Failed to connect to MongoDB, exiting.', error);
+    process.exit(1);
+  });
