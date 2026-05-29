@@ -1,0 +1,18 @@
+# Node dependencies and build outputs
+node_modules
+npm-debug.log
+pnpm-lock.yaml
+yarn.lock
+
+# Local environment files
+.env
+.env.*
+
+# Git and editor metadata
+.git
+.vscode
+.idea
+
+# OS junk
+.DS_Store
+Thumbs.db
