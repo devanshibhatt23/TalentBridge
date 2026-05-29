@@ -43,6 +43,18 @@ app.use(
 app.use(express.json());
 
 // ============================================
+// REQUEST LOGGER
+// ============================================
+app.use((req, res, next) => {
+  const safeBody = { ...req.body };
+  if (safeBody.password) safeBody.password = '[REDACTED]';
+  console.log(
+    `[REQUEST] ${req.method} ${req.originalUrl} query=${JSON.stringify(req.query)} body=${JSON.stringify(safeBody)}`,
+  );
+  next();
+});
+
+// ============================================
 // ROUTES
 // ============================================
 app.use('/api/auth', authRoutes);
@@ -64,7 +76,16 @@ app.use((req, res, next) => {
 
 // Error handling middleware (catch-all for unexpected errors)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  const safeBody = { ...req.body };
+  if (safeBody.password) safeBody.password = '[REDACTED]';
+  console.error('[ERROR] Unhandled error', {
+    method: req.method,
+    url: req.originalUrl,
+    query: req.query,
+    body: safeBody,
+    message: err.message,
+    stack: err.stack,
+  });
   res.status(500).json({
     success: false,
     message: 'Something went wrong on the server',

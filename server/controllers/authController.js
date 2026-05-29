@@ -54,6 +54,13 @@ const register = async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    console.log('[AUTH] Register request', {
+      name: name.trim(),
+      email: normalizedEmail,
+      role,
+      phone,
+      company: role === 'recruiter' ? company : undefined,
+    });
 
     // Check if a user with this email already exists
     // YOUR DIAGRAM: email is "unique" in the table
@@ -136,6 +143,7 @@ const login = async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    console.log('[AUTH] Login request', { email: normalizedEmail });
 
     // --- Find user by email ---
     // YOUR DIAGRAM: "Table pe search karo with unique email"

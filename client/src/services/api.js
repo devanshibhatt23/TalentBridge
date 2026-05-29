@@ -26,6 +26,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
+    console.error('[API ERROR]', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    })
     const message =
       error.response?.data?.message ||
       error.message ||
