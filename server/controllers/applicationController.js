@@ -48,11 +48,23 @@ const applyToJob = async (req, res) => {
       });
     }
 
+    // Build resume payload if a PDF was uploaded
+    const resumePayload = req.file
+      ? {
+          filename: req.file.originalname,
+          contentType: req.file.mimetype,
+          size: req.file.size,
+          data: req.file.buffer,
+          uploadedAt: new Date(),
+        }
+      : undefined;
+
     // Create the application
     const application = await Application.create({
       job: jobId,
       candidate: req.user._id,
       coverLetter,
+      resume: resumePayload,
       statusHistory: [
         {
           status: 'applied',
@@ -92,6 +104,7 @@ const applyToJob = async (req, res) => {
 const getMyApplications = async (req, res) => {
   try {
     const applications = await Application.find({ candidate: req.user._id })
+      .select('-resume.data')
       .populate({
         path: 'job',
         select: 'title company location status deadline',
@@ -142,6 +155,7 @@ const getJobApplications = async (req, res) => {
     }
 
     const applications = await Application.find({ job: jobId })
+      .select('-resume.data')
       .populate('candidate', 'name email profile')
       .sort({ createdAt: -1 });
 
@@ -259,9 +273,66 @@ const updateApplicationStatus = async (req, res) => {
   }
 };
 
+const downloadResume = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const application = await Application.findById(id).populate('job');
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found.',
+      });
+    }
+
+    if (req.user.role === 'recruiter') {
+      if (application.job.postedBy.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only download resumes for jobs you posted.',
+        });
+      }
+    } else if (req.user.role === 'candidate') {
+      if (application.candidate.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only download your own resume.',
+        });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied.',
+      });
+    }
+
+    if (!application.resume || !application.resume.data) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resume not found for this application.',
+      });
+    }
+
+    res.setHeader('Content-Type', application.resume.contentType || 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${application.resume.filename || 'resume.pdf'}"`,
+    );
+    res.send(application.resume.data);
+  } catch (error) {
+    console.error('Download resume error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while downloading resume.',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   applyToJob,
   getMyApplications,
   getJobApplications,
   updateApplicationStatus,
+  downloadResume,
 };

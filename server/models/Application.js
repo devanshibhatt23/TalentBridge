@@ -88,6 +88,15 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
+    // Resume upload stored as PDF data in MongoDB
+    resume: {
+      filename: { type: String, trim: true },
+      contentType: { type: String },
+      size: { type: Number },
+      data: { type: Buffer },
+      uploadedAt: { type: Date, default: Date.now },
+    },
   },
   {
     timestamps: true,

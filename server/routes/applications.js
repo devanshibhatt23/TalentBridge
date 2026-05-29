@@ -1,15 +1,28 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 const {
   applyToJob,
   getMyApplications,
   getJobApplications,
   updateApplicationStatus,
+  downloadResume,
 } = require('../controllers/applicationController');
 
 // Import middleware
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF resumes are allowed.'));
+    }
+    cb(null, true);
+  },
+});
 
 // ============================================
 // CANDIDATE ROUTES
@@ -17,11 +30,15 @@ const roleCheck = require('../middleware/roleCheck');
 
 // POST /api/applications
 // Only logged-in candidates can apply for jobs
-router.post('/', auth, roleCheck('candidate'), applyToJob);
+router.post('/', auth, roleCheck('candidate'), upload.single('resume'), applyToJob);
 
 // GET /api/applications/my-applications
 // Logged-in candidates can view their applications
 router.get('/my-applications', auth, roleCheck('candidate'), getMyApplications);
+
+// GET /api/applications/:id/resume
+// Authenticated recruiter or candidate can download the resume
+router.get('/:id/resume', auth, downloadResume);
 
 
 // ============================================

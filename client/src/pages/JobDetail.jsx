@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import {
   applyToJob,
   deleteJob,
+  downloadResume,
   fetchJobApplications,
   fetchJobById,
   updateApplicationStatus,
@@ -20,6 +21,7 @@ export function JobDetail() {
   const [job, setJob] = useState(null)
   const [applications, setApplications] = useState([])
   const [coverLetter, setCoverLetter] = useState('')
+  const [resumeFile, setResumeFile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -72,9 +74,33 @@ export function JobDetail() {
     setMessage('')
     setError('')
     try {
-      await applyToJob({ jobId: id, coverLetter })
+      const formData = new FormData()
+      formData.append('jobId', id)
+      formData.append('coverLetter', coverLetter)
+      if (resumeFile) {
+        formData.append('resume', resumeFile)
+      }
+      await applyToJob(formData)
       setMessage('Application submitted successfully.')
       setCoverLetter('')
+      setResumeFile(null)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleDownloadResume(application) {
+    setError('')
+    try {
+      const blob = await downloadResume(application._id)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = application.resume?.filename || 'resume.pdf'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
     } catch (err) {
       setError(err.message)
     }
@@ -188,6 +214,18 @@ export function JobDetail() {
                   onChange={(e) => setCoverLetter(e.target.value)}
                 />
               </label>
+              <label className="field">
+                <span className="field__label">Resume (PDF, optional)</span>
+                <input
+                  className="input"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                />
+                {resumeFile ? (
+                  <p className="muted">Selected file: {resumeFile.name}</p>
+                ) : null}
+              </label>
               <button className="btn btn--primary" type="submit">
                 Submit application
               </button>
@@ -217,6 +255,17 @@ export function JobDetail() {
                           <option key={status} value={status}>{status}</option>
                         ))}
                       </select>
+                      {app.resume?.filename ? (
+                        <button
+                          className="btn btn--secondary"
+                          type="button"
+                          onClick={() => handleDownloadResume(app)}
+                        >
+                          Download resume
+                        </button>
+                      ) : (
+                        <p className="muted">No resume uploaded.</p>
+                      )}
                     </li>
                   ))}
                 </ul>

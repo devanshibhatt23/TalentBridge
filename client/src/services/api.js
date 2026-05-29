@@ -12,7 +12,6 @@ const normalizedBaseUrl = rawBaseUrl.endsWith(apiMap.baseUrl)
 
 export const api = axios.create({
   baseURL: normalizedBaseUrl,
-  headers: { 'Content-Type': 'application/json' },
 })
 
 api.interceptors.request.use((config) => {
@@ -125,6 +124,13 @@ export async function deleteJob(id) {
 // --- Applications ---
 export async function applyToJob(payload) {
   const { data } = await api.post(endpointPath('applications', 'apply'), payload)
+  return data
+}
+
+export async function downloadResume(applicationId) {
+  const { data } = await api.get(endpointPath('applications', 'downloadResume', { id: applicationId }), {
+    responseType: 'blob',
+  })
   return data
 }
 
