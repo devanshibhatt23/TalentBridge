@@ -53,9 +53,11 @@ const register = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check if a user with this email already exists
     // YOUR DIAGRAM: email is "unique" in the table
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -68,7 +70,7 @@ const register = async (req, res) => {
     // YOUR DIAGRAM: "password → salt (random word jo add hoga), hashing"
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password, // will be hashed automatically!
       role,
       phone,
@@ -133,11 +135,13 @@ const login = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // --- Find user by email ---
     // YOUR DIAGRAM: "Table pe search karo with unique email"
     // We need .select('+password') because we set select: false in the model
     // (normally password is excluded from queries for security)
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
       return res.status(401).json({

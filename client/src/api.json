@@ -122,6 +122,15 @@
         "description": "Candidate profile"
       }
     },
+    "users": {
+      "search": {
+        "method": "GET",
+        "path": "/users/search",
+        "auth": true,
+        "query": ["keyword", "role", "company", "page", "limit"],
+        "description": "Search users by name, email, role, or company"
+      }
+    },
     "conversations": {
       "list": {
         "method": "GET",

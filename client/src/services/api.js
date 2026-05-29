@@ -5,8 +5,13 @@ const TOKEN_KEY = 'tb_token'
 
 export const apiConfig = apiMap
 
+const rawBaseUrl = import.meta.env.VITE_API_URL || apiMap.baseUrl
+const normalizedBaseUrl = rawBaseUrl.endsWith(apiMap.baseUrl)
+  ? rawBaseUrl
+  : `${rawBaseUrl.replace(/\/+$/, '')}${apiMap.baseUrl}`
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || apiMap.baseUrl,
+  baseURL: normalizedBaseUrl,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -160,6 +165,12 @@ export async function getOrCreateConversation(participantId) {
 
 export async function fetchConversationMessages(id) {
   const { data } = await api.get(endpointPath('conversations', 'messages', { id }))
+  return data
+}
+
+// --- Users ---
+export async function searchUsers(params) {
+  const { data } = await api.get(endpointPath('users', 'search'), { params })
   return data
 }
 
