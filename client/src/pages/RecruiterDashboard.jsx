@@ -3,16 +3,19 @@ import { Link } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
 import { JobCard } from '../components/JobCard.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
-import { fetchMyJobs } from '../services/api.js'
+import { fetchMyJobs, readApiCache } from '../services/api.js'
 
 export function RecruiterDashboard() {
   const { user } = useAuth()
-  const [jobs, setJobs] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [jobs, setJobs] = useState(() => readApiCache('jobs', 'myJobs')?.data?.jobs || [])
+  const [loading, setLoading] = useState(() => !readApiCache('jobs', 'myJobs'))
   const [error, setError] = useState('')
 
   useEffect(() => {
     async function load() {
+      if (!readApiCache('jobs', 'myJobs')) {
+        setLoading(true)
+      }
       try {
         const res = await fetchMyJobs()
         setJobs(res.data?.jobs || [])
@@ -29,7 +32,7 @@ export function RecruiterDashboard() {
     <div className="container page">
       <div className="page__header">
         <div>
-          <h1 className="h1">Recruiter dashboard</h1>
+          <h1 className="h1">Recruiter Dashboard</h1>
           <p className="muted">
             Welcome, {user?.name}
             {user?.company ? ` · ${user.company}` : ''}

@@ -6,6 +6,7 @@ import {
   fetchConversations,
   getOrCreateConversation,
   searchUsers,
+  readApiCache
 } from '../services/api.js'
 import { connectSocket } from '../socket.js'
 
@@ -63,8 +64,8 @@ function renderContentWithLinks(content) {
 export function Messages() {
   const { user } = useAuth()
   const { setActiveConversation, clearUnread, resetUnread } = useNotifications()
-  const [loading, setLoading] = useState(true)
-  const [conversations, setConversations] = useState([])
+  const [conversations, setConversations] = useState(() => readApiCache('conversations', 'list')?.data?.conversations || [])
+  const [loading, setLoading] = useState(() => !readApiCache('conversations', 'list'))
   const [activeId, setActiveId] = useState(null)
   const [messages, setMessages] = useState([])
   const [compose, setCompose] = useState('')
@@ -182,7 +183,7 @@ export function Messages() {
     let mounted = true
     ;(async () => {
       try {
-        setLoading(true)
+        if (!readApiCache('conversations', 'list')) setLoading(true)
         setError(null)
         await loadConversations(true)
       } catch (e) {
@@ -444,7 +445,15 @@ export function Messages() {
 
         <section className="chat__main" aria-label="Chat window">
           {!activeConversation ? (
-            <div className="muted">Select a conversation to start messaging.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '32px', textAlign: 'center', background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.05) 0%, transparent 70%)' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(244, 63, 94, 0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', marginBottom: '24px', border: '1px solid rgba(139, 92, 246, 0.2)', boxShadow: '0 0 30px rgba(139, 92, 246, 0.1)' }}>
+                💬
+              </div>
+              <h2 className="h2" style={{ marginBottom: '8px' }}>Your Messages</h2>
+              <p className="muted" style={{ maxWidth: '300px', margin: '0 auto', lineHeight: 1.6 }}>
+                Select an existing conversation from the sidebar or search for a user to start chatting!
+              </p>
+            </div>
           ) : (
             <>
               <div className="chat__header">

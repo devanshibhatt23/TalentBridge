@@ -20,6 +20,9 @@ const candidateRoutes = require('./routes/candidates');
 const conversationRoutes = require('./routes/conversations');
 const userRoutes = require('./routes/users');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./openapi.json');
+
 // Initialize Express app
 const app = express();
 
@@ -63,6 +66,9 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/users', userRoutes);
+
+// Serve interactive API documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Simple health check route
 app.get('/api/health', (req, res) => {
