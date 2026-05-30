@@ -46,9 +46,17 @@ export function ProfileMenu({ user, onSignOut }) {
         aria-expanded={open}
         aria-label="Open profile menu"
       >
-        <span className="avatar" aria-hidden="true">
-          {label}
-        </span>
+        {user?.avatar ? (
+          <img 
+            src={user.avatar} 
+            alt="Avatar" 
+            style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', display: 'block' }} 
+          />
+        ) : (
+          <span className="avatar" aria-hidden="true">
+            {label}
+          </span>
+        )}
       </button>
 
       {open ? (

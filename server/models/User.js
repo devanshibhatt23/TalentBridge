@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    avatar: {
+      type: String, // Base64 string for profile image
+    },
+
     password: {
       type: String,
       required: [true, 'Password is required'],
