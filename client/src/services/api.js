@@ -10,9 +10,6 @@ const normalizedBaseUrl = rawBaseUrl.endsWith(apiMap.baseUrl)
   ? rawBaseUrl
   : `${rawBaseUrl.replace(/\/+$/, '')}${apiMap.baseUrl}`
 
-console.log("raw url: ", rawBaseUrl);
-console.log("normalised url: ", normalizedBaseUrl);
-
 export const api = axios.create({
   baseURL: normalizedBaseUrl,
 })
@@ -30,21 +27,7 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
 
-  if (config.method === 'get') {
-    const key = config.url + JSON.stringify(config.params || {})
-    const cached = cache.get(key)
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      config.adapter = () =>
-        Promise.resolve({
-          data: cached.data,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config,
-          request: {},
-        })
-    }
-  } else {
+  if (config.method !== 'get') {
     // If it's a POST/PUT/DELETE, clear cache to ensure fresh data
     cache.clear()
   }
@@ -52,14 +35,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Override api.get to implement robust in-memory caching
+const originalGet = api.get
+api.get = async function (url, config = {}) {
+  const key = url + JSON.stringify(config.params || {})
+  const cached = cache.get(key)
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return Promise.resolve({ data: cached.data, status: 200, statusText: 'OK', config })
+  }
+
+  const response = await originalGet.call(api, url, config)
+  cache.set(key, { data: response.data, timestamp: Date.now() })
+  return response
+}
+
 api.interceptors.response.use(
-  (res) => {
-    if (res.config.method === 'get') {
-      const key = res.config.url + JSON.stringify(res.config.params || {})
-      cache.set(key, { data: res.data, timestamp: Date.now() })
-    }
-    return res
-  },
+  (res) => res,
   (error) => {
     console.error('[API ERROR]', {
       url: error.config?.url,

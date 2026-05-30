@@ -1188,9 +1188,9 @@ select.input {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(47, 129, 247, 0.35);
-  background: rgba(47, 129, 247, 0.10);
-  color: #79b8ff;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.10);
+  color: var(--primary);
 }
 
 .msg__body {
@@ -1202,25 +1202,25 @@ select.input {
 }
 
 .msg__link {
-  color: #58a6ff;
+  color: var(--primary);
   text-decoration: underline;
-  text-decoration-color: rgba(88, 166, 255, 0.4);
+  text-decoration-color: rgba(139, 92, 246, 0.4);
   text-underline-offset: 2px;
   transition: text-decoration-color 150ms ease, color 150ms ease;
   cursor: pointer;
 }
 
 .msg__link:hover {
-  color: #79b8ff;
-  text-decoration-color: rgba(121, 184, 255, 0.8);
+  color: var(--primary-2);
+  text-decoration-color: rgba(139, 92, 246, 0.8);
 }
 
 .msg--mine {
   align-self: flex-end;
   padding: 8px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(47, 129, 247, 0.30);
-  background: rgba(47, 129, 247, 0.10);
+  border: 1px solid rgba(139, 92, 246, 0.30);
+  background: rgba(139, 92, 246, 0.10);
 }
 
 .msg--theirs {
