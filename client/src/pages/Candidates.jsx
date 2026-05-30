@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CandidateCard } from '../components/CandidateCard.jsx'
 import { SearchBar } from '../components/SearchBar.jsx'
 import { Alert } from '../components/Alert.jsx'
+import { Spinner } from '../components/Spinner.jsx'
 import { searchCandidates } from '../services/api.js'
 
 export function Candidates() {
@@ -11,7 +12,7 @@ export function Candidates() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  async function load() {
+  async function load(page = 1) {
     setLoading(true)
     setError('')
     try {
@@ -28,8 +29,12 @@ export function Candidates() {
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    const timer = setTimeout(() => {
+      load(1)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [keyword, location])
 
   return (
     <div className="container page">
@@ -58,7 +63,7 @@ export function Candidates() {
       <Alert type="error">{error}</Alert>
 
       {loading ? (
-        <p className="muted">Loading candidates…</p>
+        <Spinner message="Loading candidates..." />
       ) : candidates.length === 0 ? (
         <p className="muted">No candidates match your search.</p>
       ) : (

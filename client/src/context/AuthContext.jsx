@@ -5,6 +5,8 @@ import {
   fetchMe,
   loginUser,
   registerUser,
+  updateProfile as updateProfileApi,
+  uploadAvatar as uploadAvatarApi,
   setStoredToken,
   getStoredToken,
 } from '../services/api.js'
@@ -22,6 +24,7 @@ function normalizeUser(raw) {
     phone: raw.phone,
     company: raw.company,
     profile: raw.profile,
+    avatar: raw.avatar,
   }
 }
 
@@ -86,6 +89,22 @@ export function AuthProvider({ children }) {
     setError(null)
   }, [])
 
+  const updateProfile = useCallback(async (payload) => {
+    setError(null)
+    const res = await updateProfileApi(payload)
+    const normalized = normalizeUser(res.data?.user)
+    setUser(normalized)
+    return normalized
+  }, [])
+
+  const uploadAvatar = useCallback(async (file) => {
+    setError(null)
+    const res = await uploadAvatarApi(file)
+    const normalized = normalizeUser(res.data?.user)
+    setUser(normalized)
+    return normalized
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -96,10 +115,12 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      updateProfile,
+      uploadAvatar,
       refreshUser: loadSession,
       dashboardPath: user ? dashboardPathForRole(user.role) : '/login',
     }),
-    [user, loading, error, login, register, logout, loadSession],
+    [user, loading, error, login, register, logout, updateProfile, uploadAvatar, loadSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -3,17 +3,21 @@ import { Link } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
 import { ApplicationDetail } from '../components/ApplicationDetail.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
-import { fetchMyApplications } from '../services/api.js'
+import { Spinner } from '../components/Spinner.jsx'
+import { fetchMyApplications, readApiCache } from '../services/api.js'
 import { getSocket } from '../socket.js'
 
 export function MyApplications() {
-  const [applications, setApplications] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [applications, setApplications] = useState(() => readApiCache('applications', 'myApplications')?.data?.applications || [])
+  const [loading, setLoading] = useState(() => !readApiCache('applications', 'myApplications'))
   const [error, setError] = useState('')
   const [selectedApp, setSelectedApp] = useState(null)
 
   useEffect(() => {
     async function load() {
+      if (!readApiCache('applications', 'myApplications')) {
+        setLoading(true)
+      }
       try {
         const res = await fetchMyApplications()
         setApplications(res.data?.applications || [])
@@ -56,7 +60,7 @@ export function MyApplications() {
       <Alert type="error">{error}</Alert>
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <Spinner message="Loading your applications..." />
       ) : applications.length === 0 ? (
         <div className="card">
           <p className="muted">You have not applied to any jobs yet.</p>
@@ -65,42 +69,74 @@ export function MyApplications() {
       ) : (
         <div className="stack">
           {applications.map((app) => (
-            <article key={app._id} className="card list-card">
-              <div className="list-card__top">
+            <article 
+              key={app._id} 
+              className="card" 
+              style={{ 
+                padding: '20px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '16px',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => setSelectedApp(app)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = 'var(--shadow), var(--shadow-glow)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none'
+                e.currentTarget.style.boxShadow = 'var(--shadow)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
                 <div>
-                  <h3 className="list-card__title">
-                    <Link to={`/jobs/${app.job?._id}`}>{app.job?.title}</Link>
+                  <h3 className="h2" style={{ margin: '0 0 4px 0', fontSize: '20px' }}>
+                    <Link 
+                      to={`/jobs/${app.job?._id}`} 
+                      onClick={(e) => e.stopPropagation()} 
+                      style={{ textDecoration: 'none', color: 'var(--text)' }}
+                    >
+                      {app.job?.title}
+                    </Link>
                   </h3>
-                  <p className="muted">
+                  <p className="muted" style={{ margin: 0, fontSize: '15px' }}>
                     {app.job?.company} · {app.job?.location}
                   </p>
                 </div>
                 <StatusBadge status={app.status} />
               </div>
-              {app.statusHistory?.length > 0 ? (
-                <p className="muted list-card__meta">
-                  Last update: {app.statusHistory[app.statusHistory.length - 1]?.note}
+              
+              <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <p className="muted" style={{ margin: 0, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🕒</span> 
+                  {app.statusHistory?.length > 0 
+                    ? `Last update: ${app.statusHistory[app.statusHistory.length - 1]?.note}`
+                    : 'Application submitted'}
                 </p>
-              ) : null}
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {app.resume?.filename && (
-                  <span style={{
-                    display: 'inline-block',
-                    fontSize: '0.875rem',
-                    padding: '0.25rem 0.5rem',
-                    backgroundColor: 'var(--color-success-light)',
-                    color: 'var(--color-success)',
-                    borderRadius: '0.25rem',
-                  }}>
-                    📄 Resume attached
-                  </span>
-                )}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {app.resume?.filename && (
+                    <span className="nav__meta" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: 'var(--primary)' }}>📄</span> Resume attached
+                    </span>
+                  )}
+                  {app.matchScore && (
+                    <span className="nav__meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent)', borderColor: 'var(--accent-dim)', background: 'var(--accent-dim)' }}>
+                      ✨ Match: {app.matchScore}%
+                    </span>
+                  )}
+                </div>
                 <button
-                  className="btn btn--secondary"
-                  onClick={() => setSelectedApp(app)}
-                  style={{ fontSize: '0.875rem', padding: '0.25rem 0.75rem', marginBottom: 0 }}
+                  className="btn btn--primary"
+                  style={{ padding: '8px 16px' }}
                 >
-                  View Details
+                  View Details →
                 </button>
               </div>
             </article>

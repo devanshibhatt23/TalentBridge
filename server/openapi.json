@@ -1,0 +1,994 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TalentBridge API",
+    "description": "Interactive API Documentation for the TalentBridge matching platform.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your JWT token in the format: <token_value>"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "651d2f8e9a2c3b4e5f6a7b8c" },
+          "name": { "type": "string", "example": "John Doe" },
+          "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+          "phone": { "type": "string", "example": "+1234567890" },
+          "role": { "type": "string", "enum": ["recruiter", "candidate"], "example": "candidate" },
+          "company": { "type": "string", "example": "Acme Corp" },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "headline": { "type": "string", "example": "Software Engineer Intern" },
+              "skills": { "type": "array", "items": { "type": "string" }, "example": ["Python", "Node.js", "React"] },
+              "experience": { "type": "string", "example": "2 years backend development" },
+              "education": { "type": "string", "example": "B.Tech CSE from IIT Delhi" },
+              "location": { "type": "string", "example": "Bangalore, India" },
+              "resumeUrl": { "type": "string", "example": "/uploads/resumes/resume-123.pdf" },
+              "bio": { "type": "string", "example": "Passionate developer looking to build scalable web applications." }
+            }
+          },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2026-05-30T10:00:00Z" },
+          "updatedAt": { "type": "string", "format": "date-time", "example": "2026-05-30T10:05:00Z" }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "651d3e8e9a2c3b4e5f6a7b8d" },
+          "jobId": { "type": "string", "format": "uuid", "example": "550e8400-e29b-41d4-a716-446655440000" },
+          "postedBy": { "type": "string", "description": "User ID of the recruiter", "example": "651d2f8e9a2c3b4e5f6a7b8c" },
+          "title": { "type": "string", "example": "Backend Developer" },
+          "company": { "type": "string", "example": "Acme Corp" },
+          "description": { "type": "string", "example": "We are looking for a Node.js developer..." },
+          "requirements": { "type": "string", "example": "Minimum 2 years of experience with Node.js and MongoDB." },
+          "location": { "type": "string", "example": "Bangalore, India (Hybrid)" },
+          "jobType": { "type": "string", "enum": ["full-time", "part-time", "internship", "contract", "remote"], "example": "full-time" },
+          "salary": { "type": "string", "example": "₹15-20 LPA" },
+          "additionalDetails": { "type": "string", "example": "Includes health insurance and stock options." },
+          "skills": { "type": "array", "items": { "type": "string" }, "example": ["Node.js", "MongoDB", "Express"] },
+          "status": { "type": "string", "enum": ["open", "closed"], "example": "open" },
+          "deadline": { "type": "string", "format": "date-time", "example": "2026-06-30T23:59:59Z" },
+          "openings": { "type": "integer", "example": 2 },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2026-05-30T10:00:00Z" },
+          "updatedAt": { "type": "string", "format": "date-time", "example": "2026-05-30T10:05:00Z" }
+        }
+      },
+      "Application": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "651d4e8e9a2c3b4e5f6a7b8e" },
+          "job": { "type": "string", "description": "Job ID", "example": "651d3e8e9a2c3b4e5f6a7b8d" },
+          "candidate": { "type": "string", "description": "Candidate User ID", "example": "651d2f8e9a2c3b4e5f6a7b8c" },
+          "status": { "type": "string", "enum": ["applied", "screening", "interviewing", "offered", "hired", "rejected", "withdrawn"], "example": "applied" },
+          "matchScore": { "type": "integer", "minimum": 0, "maximum": 100, "example": 85 },
+          "coverLetter": { "type": "string", "example": "I am highly excited to apply for this role..." },
+          "resume": {
+            "type": "object",
+            "properties": {
+              "filename": { "type": "string", "example": "my-resume.pdf" },
+              "contentType": { "type": "string", "example": "application/pdf" },
+              "size": { "type": "integer", "example": 204850 },
+              "uploadedAt": { "type": "string", "format": "date-time", "example": "2026-05-30T10:00:00Z" }
+            }
+          },
+          "statusHistory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "enum": ["applied", "screening", "interviewing", "offered", "hired", "rejected", "withdrawn"] },
+                "changedAt": { "type": "string", "format": "date-time" },
+                "changedBy": { "type": "string" },
+                "note": { "type": "string" }
+              }
+            }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Conversation": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "651d5e8e9a2c3b4e5f6a7b8f" },
+          "participants": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["651d2f8e9a2c3b4e5f6a7b8c", "651d2f8e9a2c3b4e5f6a7b8d"]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string" },
+                "sender": { "type": "string" },
+                "content": { "type": "string" },
+                "messageType": { "type": "string", "enum": ["text", "oa_link", "interview_link"] },
+                "createdAt": { "type": "string", "format": "date-time" }
+              }
+            }
+          },
+          "lastMessageAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "API health check",
+        "description": "Simple endpoint to verify if the server is alive and responding.",
+        "responses": {
+          "200": {
+            "description": "API is running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "message": { "type": "string", "example": "TalentBridge API is running!" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "description": "Create a candidate or recruiter account. Company is required for recruiters.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "role"],
+                "properties": {
+                  "name": { "type": "string", "example": "John Doe" },
+                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+                  "password": { "type": "string", "minLength": 6, "example": "password123" },
+                  "role": { "type": "string", "enum": ["candidate", "recruiter"], "example": "candidate" },
+                  "phone": { "type": "string", "example": "+1234567890" },
+                  "company": { "type": "string", "description": "Required if role is recruiter", "example": "Acme Corp" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "User registered successfully." },
+                    "token": { "type": "string", "description": "JWT authentication token" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": { "$ref": "#/components/schemas/User" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid fields or password too short" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User login",
+        "description": "Authenticate user with email and password to receive a JWT.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Login successful" },
+                    "token": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": { "$ref": "#/components/schemas/User" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid email or password" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current user profile",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": { "$ref": "#/components/schemas/User" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized — invalid or missing token" }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List or search open jobs",
+        "description": "Fetch list of all open job postings with keyword search and multiple filters.",
+        "parameters": [
+          { "name": "keyword", "in": "query", "schema": { "type": "string" }, "description": "Search in title, description, skills, company" },
+          { "name": "location", "in": "query", "schema": { "type": "string" }, "description": "Filter by location" },
+          { "name": "jobType", "in": "query", "schema": { "type": "string" }, "description": "Filter by job type" },
+          { "name": "skills", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated list of skills" },
+          { "name": "status", "in": "query", "schema": { "type": "string", "default": "open" }, "description": "Filter by status" },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "sortBy", "in": "query", "schema": { "type": "string", "default": "createdAt" } },
+          { "name": "order", "in": "query", "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobs list retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobs": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } },
+                        "total": { "type": "integer", "example": 25 },
+                        "page": { "type": "integer", "example": 1 },
+                        "pages": { "type": "integer", "example": 3 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Post a new job",
+        "description": "Create a new job posting. Requires recruiter role.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "company", "description", "requirements", "location", "jobType"],
+                "properties": {
+                  "title": { "type": "string", "example": "Backend Developer" },
+                  "company": { "type": "string", "example": "Acme Corp" },
+                  "description": { "type": "string", "example": "We are looking for..." },
+                  "requirements": { "type": "string", "example": "Node.js and MongoDB knowledge..." },
+                  "location": { "type": "string", "example": "Bangalore, India" },
+                  "jobType": { "type": "string", "enum": ["full-time", "part-time", "internship", "contract", "remote"], "example": "full-time" },
+                  "salary": { "type": "string", "example": "₹15-20 LPA" },
+                  "skills": { "type": "array", "items": { "type": "string" }, "example": ["Node.js", "MongoDB"] },
+                  "additionalDetails": { "type": "string", "example": "Additional round info..." },
+                  "deadline": { "type": "string", "format": "date-time" },
+                  "openings": { "type": "integer", "default": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Job posted successfully!" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": { "$ref": "#/components/schemas/Job" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden — Only recruiters can perform this action" }
+        }
+      }
+    },
+    "/jobs/recruiter/my-jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get recruiter's own posted jobs",
+        "description": "List all jobs posted by the logged-in recruiter.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Recruiter's jobs list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobs": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get job details by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Job Database ID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job details retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": { "$ref": "#/components/schemas/Job" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Job not found" }
+        }
+      },
+      "put": {
+        "tags": ["Jobs"],
+        "summary": "Update job details",
+        "description": "Update details of a posted job. Recruiter must own the job.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "requirements": { "type": "string" },
+                  "location": { "type": "string" },
+                  "jobType": { "type": "string" },
+                  "status": { "type": "string", "enum": ["open", "closed"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Job updated successfully!" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": { "$ref": "#/components/schemas/Job" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden — Recruiter doesn't own this job" },
+          "404": { "description": "Job not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Jobs"],
+        "summary": "Delete a job",
+        "description": "Deletes a job listing. Recruiter must own the job.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Job deleted successfully." }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Job not found" }
+        }
+      }
+    },
+    "/applications": {
+      "post": {
+        "tags": ["Applications"],
+        "summary": "Apply to a job",
+        "description": "Submit an application with an optional cover letter and PDF resume upload. Automatically parses resume and calculates match score using Gemini AI.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["jobId", "resume"],
+                "properties": {
+                  "jobId": { "type": "string", "example": "651d3e8e9a2c3b4e5f6a7b8d" },
+                  "coverLetter": { "type": "string", "example": "My custom cover letter text..." },
+                  "resume": { "type": "string", "format": "binary", "description": "PDF resume file" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Application submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Successfully applied to the job!" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "application": { "$ref": "#/components/schemas/Application" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Already applied, closed job, or missing/invalid fields" }
+        }
+      }
+    },
+    "/applications/my-applications": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Get candidate's own applications",
+        "description": "List all applications submitted by the logged-in candidate. Excludes heavy resume buffer data.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Candidate's application list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "applications": { "type": "array", "items": { "$ref": "#/components/schemas/Application" } },
+                        "count": { "type": "integer", "example": 2 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/applications/job/{jobId}": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Get all applications for a specific job",
+        "description": "List all candidate applications submitted for a job. Requires recruiter role and ownership of the job.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "jobId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Applications retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "applications": { "type": "array", "items": { "$ref": "#/components/schemas/Application" } },
+                        "count": { "type": "integer", "example": 10 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/applications/{id}/status": {
+      "put": {
+        "tags": ["Applications"],
+        "summary": "Update application status (Audit Trail)",
+        "description": "Update application status (screening, interviewing, offered, etc.). Logs history entry to support audit trailing and optimistic concurrency control.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Application Database ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["applied", "screening", "interviewing", "offered", "hired", "rejected", "withdrawn"], "example": "interviewing" },
+                  "note": { "type": "string", "example": "Passed screening, scheduled round 1 tech interview." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Application status updated to interviewing." },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "application": { "$ref": "#/components/schemas/Application" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": { "description": "Concurrency Conflict — The application was updated by another recruiter. Refresh needed." }
+        }
+      }
+    },
+    "/applications/{id}/resume": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Download application resume file",
+        "description": "Retrieves the PDF resume binary attached to the application. Recruiter can only download resumes for jobs they posted; candidates can only download their own resumes.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resume PDF file served",
+            "headers": {
+              "Content-Disposition": {
+                "schema": { "type": "string", "example": "attachment; filename=\"resume.pdf\"" }
+              }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "404": { "description": "Application or resume not found" }
+        }
+      },
+      "put": {
+        "tags": ["Applications"],
+        "summary": "Update resume for an application",
+        "description": "Replaces the candidate's uploaded resume for an existing application.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["resume"],
+                "properties": {
+                  "resume": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resume replaced successfully"
+          }
+        }
+      }
+    },
+    "/applications/{id}/resume-info": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Get resume metadata",
+        "description": "Gets resume filename, upload timestamp, content-type and size without loading the heavy PDF buffer.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "resume": {
+                          "type": "object",
+                          "properties": {
+                            "filename": { "type": "string" },
+                            "contentType": { "type": "string" },
+                            "size": { "type": "integer" },
+                            "uploadedAt": { "type": "string", "format": "date-time" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/search": {
+      "get": {
+        "tags": ["Candidates"],
+        "summary": "Search candidates profile",
+        "description": "Enables recruiters to search candidates by name, headline, bio, location, or skills.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "keyword", "in": "query", "schema": { "type": "string" }, "description": "Search by keywords" },
+          { "name": "location", "in": "query", "schema": { "type": "string" } },
+          { "name": "skills", "in": "query", "schema": { "type": "string" }, "description": "Skills filter" },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "candidates": { "type": "array", "items": { "$ref": "#/components/schemas/User" } },
+                        "total": { "type": "integer" },
+                        "page": { "type": "integer" },
+                        "pages": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/{id}": {
+      "get": {
+        "tags": ["Candidates"],
+        "summary": "Get full candidate profile details",
+        "description": "View details of a candidate including headline, bio, experience, skills, and resumeUrl.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidate profile details retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "candidate": { "$ref": "#/components/schemas/User" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/search": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Search users",
+        "description": "Enables search of all users across name, email, role, or company name.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "keyword", "in": "query", "schema": { "type": "string" } },
+          { "name": "role", "in": "query", "schema": { "type": "string", "enum": ["candidate", "recruiter"] } },
+          { "name": "company", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "users": { "type": "array", "items": { "$ref": "#/components/schemas/User" } },
+                        "total": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "tags": ["Conversations"],
+        "summary": "List my conversations",
+        "description": "Gets all conversations for the authenticated candidate or recruiter, sorted by latest activity.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Conversations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversations": { "type": "array", "items": { "$ref": "#/components/schemas/Conversation" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Conversations"],
+        "summary": "Get or create a conversation",
+        "description": "Gets or establishes a 1:1 direct chat session with another user.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["participantId"],
+                "properties": {
+                  "participantId": { "type": "string", "description": "Database ID of user to chat with", "example": "651d2f8e9a2c3b4e5f6a7b8c" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversation initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "conversation": { "$ref": "#/components/schemas/Conversation" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{id}/messages": {
+      "get": {
+        "tags": ["Conversations"],
+        "summary": "Fetch messages for a conversation",
+        "description": "Retrieves the complete message trail inside an existing active conversation session.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "messages": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "_id": { "type": "string" },
+                              "sender": { "$ref": "#/components/schemas/User" },
+                              "content": { "type": "string" },
+                              "messageType": { "type": "string", "enum": ["text", "oa_link", "interview_link"] },
+                              "createdAt": { "type": "string", "format": "date-time" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

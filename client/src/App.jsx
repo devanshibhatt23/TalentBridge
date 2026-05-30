@@ -5,6 +5,8 @@ import { AppLayout } from './components/AppLayout.jsx'
 import { GuestRoute } from './components/GuestRoute.jsx'
 import { HomeRedirect } from './components/HomeRedirect.jsx'
 import { ProtectedRoute } from './components/ProtectedRoute.jsx'
+import { Landing } from './pages/Landing.jsx'
+import { Features } from './pages/Features.jsx'
 import { Login } from './pages/Login.jsx'
 import { Register } from './pages/Register.jsx'
 import { CandidateDashboard } from './pages/CandidateDashboard.jsx'
@@ -22,7 +24,8 @@ function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route index element={<HomeRedirect />} />
+        <Route index element={<Landing />} />
+        <Route path="/features" element={<Features />} />
 
         <Route
           path="/login"
@@ -41,8 +44,22 @@ function App() {
           }
         />
 
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route
+          path="/jobs"
+          element={
+            <ProtectedRoute>
+              <Jobs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jobs/:id"
+          element={
+            <ProtectedRoute>
+              <JobDetail />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/jobs/new"

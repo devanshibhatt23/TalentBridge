@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { createJob } from '../services/api.js'
+import { formatJobType } from '../utils/formatters.js'
 import apiMap from '../api.json'
 
 const emptyForm = {
@@ -20,9 +22,17 @@ const emptyForm = {
 
 export function CreateJob() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Pre-fill the company from user profile on mount
+  useEffect(() => {
+    if (user?.company) {
+      setForm((prev) => ({ ...prev, company: user.company }))
+    }
+  }, [user])
 
   function updateField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -53,7 +63,10 @@ export function CreateJob() {
   return (
     <div className="container page">
       <div className="page__header">
-        <h1 className="h1">Post a job</h1>
+        <div>
+          <h1 className="h1">Post a job</h1>
+          <p className="muted">Create a new opportunity for candidates.</p>
+        </div>
       </div>
 
       <form className="card form-grid" onSubmit={onSubmit}>
@@ -66,7 +79,14 @@ export function CreateJob() {
 
         <label className="field">
           <span className="field__label">Company</span>
-          <input className="input" value={form.company} onChange={(e) => updateField('company', e.target.value)} placeholder="Uses your profile company if empty" />
+          <input 
+            className={`input ${user?.company ? 'input--readonly' : ''}`} 
+            value={form.company} 
+            onChange={(e) => !user?.company && updateField('company', e.target.value)} 
+            readOnly={!!user?.company}
+            placeholder="Company Name" 
+          />
+          {user?.company && <span className="field__hint">Auto-filled from your recruiter profile</span>}
         </label>
 
         <label className="field field--full">
@@ -88,7 +108,7 @@ export function CreateJob() {
           <span className="field__label">Job type</span>
           <select className="input" value={form.jobType} onChange={(e) => updateField('jobType', e.target.value)}>
             {apiMap.jobTypes.map((type) => (
-              <option key={type} value={type}>{type}</option>
+              <option key={type} value={type}>{formatJobType(type)}</option>
             ))}
           </select>
         </label>
