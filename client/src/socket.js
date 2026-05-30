@@ -4,8 +4,15 @@ import { getStoredToken } from './services/api.js'
 let socket = null
 
 function socketUrl() {
-  // If VITE_SOCKET_URL is set, use it. Otherwise default to same origin.
-  return import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || window.location.origin
+  // If VITE_SOCKET_URL is set, use it.
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL
+
+  const apiUrl = import.meta.env.VITE_API_URL || ''
+  if (apiUrl) {
+    return apiUrl.replace(/\/api\/?$/, '')
+  }
+
+  return window.location.origin
 }
 
 export function getSocket() {

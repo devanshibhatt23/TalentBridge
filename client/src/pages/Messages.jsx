@@ -31,6 +31,7 @@ export function Messages() {
   const [messages, setMessages] = useState([])
   const [compose, setCompose] = useState('')
   const [composeType, setComposeType] = useState('text')
+  const [unreadCounts, setUnreadCounts] = useState({})
   
   // New search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -43,6 +44,7 @@ export function Messages() {
   const [error, setError] = useState(null)
 
   const socketRef = useRef(null)
+  const messagesEndRef = useRef(null)
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeId) || null,
@@ -62,7 +64,24 @@ export function Messages() {
       return
     }
     const res = await fetchConversationMessages(conversationId)
-    setMessages(res.data?.messages || [])
+    const loadedMessages = res.data?.messages || []
+    setMessages(loadedMessages)
+    
+    // Mark as read by clearing unread count when viewing
+    if (unreadCounts[conversationId]) {
+      setUnreadCounts((prev) => {
+        const next = { ...prev }
+        delete next[conversationId]
+        return next
+      })
+    }
+  }
+
+  function calculateUnreadCount(conversationId, msgs) {
+    if (!msgs || msgs.length === 0) return 0
+    const lastReadIndex = messages.findIndex((m) => m.id === msgs[msgs.length - 1]?.id)
+    if (lastReadIndex === msgs.length - 1) return 0
+    return msgs.slice(lastReadIndex + 1).length
   }
 
   async function handleSearch() {
@@ -151,7 +170,15 @@ export function Messages() {
     socketRef.current = s
 
     function onMessageNew(msg) {
-      if (msg?.conversationId !== activeId) return
+      if (msg?.conversationId !== activeId) {
+        // If not viewing this conversation, increment unread count
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [msg?.conversationId]: (prev[msg?.conversationId] || 0) + 1,
+        }))
+        return
+      }
+      // If viewing, just add the message
       setMessages((prev) => [...prev, msg])
     }
 
@@ -184,6 +211,10 @@ export function Messages() {
   }, [activeId])
 
   useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  useEffect(() => {
     const s = socketRef.current
     if (!s || !activeId) return
     s.emit('conversation:join', { conversationId: activeId })
@@ -204,7 +235,9 @@ export function Messages() {
       'message:send',
       { conversationId: activeId, content, messageType: composeType },
       (ack) => {
-        if (!ack?.ok) setError(ack?.error || 'Failed to send message.')
+        if (!ack?.ok) {
+          setError(ack?.error || 'Failed to send message.')
+        }
       },
     )
   }
@@ -327,7 +360,10 @@ export function Messages() {
                 onClick={() => setActiveId(c.id)}
                 type="button"
               >
-                <div className="chat__itemTitle">{c.otherUser?.name || c.otherUser?.email}</div>
+                <div className="chat__itemTitle">
+                  <span>{c.otherUser?.name || c.otherUser?.email}</span>
+                  {unreadCounts[c.id] ? <span className="chat__itemBadge">{unreadCounts[c.id]}</span> : null}
+                </div>
                 <div className="chat__itemSub muted">
                   {c.lastMessage
                     ? `${messageBadge(c.lastMessage.messageType) ? `[${messageBadge(c.lastMessage.messageType)}] ` : ''}${c.lastMessage.content}`
@@ -367,6 +403,7 @@ export function Messages() {
                     </div>
                   )
                 })}
+                <div ref={messagesEndRef} />
               </div>
 
               <form className="chat__composer" onSubmit={onSend}>
