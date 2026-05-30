@@ -70,8 +70,8 @@ export function CandidateDashboard() {
 
       <Alert type="error">{error}</Alert>
 
-      <div className="grid grid--2">
-        <section className="stack">
+      <div className="grid grid--2" style={{ alignItems: 'flex-start' }}>
+        <section className="stack" style={{ gap: '16px' }}>
           <div className="card__header-row">
             <h2 className="h2" style={{ margin: 0 }}>Recent Applications</h2>
             <Link className="navlink" to="/my-applications" style={{ fontSize: '14px' }}>
@@ -111,7 +111,7 @@ export function CandidateDashboard() {
           )}
         </section>
 
-        <section className="stack">
+        <section className="stack" style={{ gap: '16px' }}>
           <div className="card__header-row">
             <h2 className="h2" style={{ margin: 0 }}>Latest Opportunities</h2>
             <Link className="navlink" to="/jobs" style={{ fontSize: '14px' }}>
