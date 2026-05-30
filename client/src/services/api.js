@@ -98,6 +98,15 @@ export async function updateProfile(payload) {
   return data
 }
 
+export async function uploadAvatar(file) {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  const { data } = await api.put(endpointPath('auth', 'avatar'), formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
+}
+
 // --- Jobs ---
 export async function fetchJobs(params) {
   const { data } = await api.get(endpointPath('jobs', 'list'), { params })

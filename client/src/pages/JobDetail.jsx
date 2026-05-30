@@ -14,6 +14,7 @@ import {
 
 import { ProfileSetupModal } from '../components/ProfileSetupModal.jsx'
 import { ApplyModal } from '../components/ApplyModal.jsx'
+import { Spinner } from '../components/Spinner.jsx'
 import { formatJobType, formatDate } from '../utils/formatters.js'
 import apiMap from '../api.json'
 
@@ -141,8 +142,8 @@ export function JobDetail() {
 
   if (loading) {
     return (
-      <div className="container page">
-        <p className="muted">Loading job…</p>
+      <div className="container page" style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner message="Loading job details..." />
       </div>
     )
   }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 import { JobCard } from '../components/JobCard.jsx'
+import { Spinner } from '../components/Spinner.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { fetchJobs, fetchMyApplications } from '../services/api.js'
 
@@ -40,8 +41,8 @@ export function CandidateDashboard() {
         className="card" 
         style={{ 
           marginBottom: '24px', 
-          background: 'linear-gradient(135deg, rgba(47, 129, 247, 0.15) 0%, rgba(120, 75, 255, 0.05) 100%)',
-          border: '1px solid rgba(47, 129, 247, 0.2)',
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(244, 63, 94, 0.08) 100%)',
+          border: '1px solid rgba(139, 92, 246, 0.25)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -78,7 +79,9 @@ export function CandidateDashboard() {
             </Link>
           </div>
           {loading ? (
-            <div className="skeleton" style={{ height: '100px' }}></div>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+              <Spinner message="Loading applications..." />
+            </div>
           ) : applications.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '32px 16px' }}>
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>📝</div>
@@ -110,16 +113,15 @@ export function CandidateDashboard() {
 
         <section className="stack">
           <div className="card__header-row">
-            <h2 className="h2" style={{ margin: 0 }}>Recommended for you</h2>
+            <h2 className="h2" style={{ margin: 0 }}>Latest Opportunities</h2>
             <Link className="navlink" to="/jobs" style={{ fontSize: '14px' }}>
               Browse
             </Link>
           </div>
           {loading ? (
-            <>
-              <div className="skeleton" style={{ height: '140px' }}></div>
-              <div className="skeleton" style={{ height: '140px' }}></div>
-            </>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+              <Spinner message="Loading jobs..." />
+            </div>
           ) : recommended.length === 0 ? (
             <div className="card">
               <p className="muted">No open jobs right now. Check back later!</p>

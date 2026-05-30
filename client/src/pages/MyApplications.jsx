@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
 import { ApplicationDetail } from '../components/ApplicationDetail.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
+import { Spinner } from '../components/Spinner.jsx'
 import { fetchMyApplications } from '../services/api.js'
 import { getSocket } from '../socket.js'
 
@@ -56,7 +57,7 @@ export function MyApplications() {
       <Alert type="error">{error}</Alert>
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <Spinner message="Loading your applications..." />
       ) : applications.length === 0 ? (
         <div className="card">
           <p className="muted">You have not applied to any jobs yet.</p>
@@ -78,9 +79,9 @@ export function MyApplications() {
               }}
               onClick={() => setSelectedApp(app)}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
                 e.currentTarget.style.boxShadow = 'var(--shadow), var(--shadow-glow)'
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'
+                e.currentTarget.style.borderColor = 'var(--primary)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'none'
@@ -123,7 +124,7 @@ export function MyApplications() {
                     </span>
                   )}
                   {app.matchScore && (
-                    <span className="nav__meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent)', borderColor: 'var(--accent-dim)', background: 'rgba(16, 185, 129, 0.05)' }}>
+                    <span className="nav__meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent)', borderColor: 'var(--accent-dim)', background: 'var(--accent-dim)' }}>
                       ✨ Match: {app.matchScore}%
                     </span>
                   )}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { JobCard } from '../components/JobCard.jsx'
 import { SearchBar } from '../components/SearchBar.jsx'
 import { Alert } from '../components/Alert.jsx'
+import { Spinner } from '../components/Spinner.jsx'
 import { fetchJobs } from '../services/api.js'
 import { formatJobType } from '../utils/formatters.js'
 import apiMap from '../api.json'
@@ -34,11 +35,6 @@ export function Jobs() {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    // Initial load
-    load()
-  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -89,7 +85,7 @@ export function Jobs() {
       <Alert type="error">{error}</Alert>
 
       {loading ? (
-        <p className="muted">Loading jobs…</p>
+        <Spinner message="Loading jobs..." />
       ) : jobs.length === 0 ? (
         <p className="muted">No jobs found. Try different filters.</p>
       ) : (

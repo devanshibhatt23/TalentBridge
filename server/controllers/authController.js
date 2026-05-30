@@ -287,4 +287,41 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, updateProfile };
+// ============================================
+// UPLOAD AVATAR
+// ============================================
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image provided.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Convert buffer to base64
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+    const dataUri = `data:${mimeType};base64,${base64Image}`;
+
+    user.avatar = dataUri;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Avatar updated successfully',
+      data: { user },
+    });
+  } catch (error) {
+    console.error('Upload avatar error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while uploading avatar.',
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile, uploadAvatar };
