@@ -108,7 +108,7 @@ export function Landing() {
           }}>
             Get Started Free
           </Link>
-          <Link to="/jobs" className="btn btn--ghost" style={{ 
+          {/* <Link to="/jobs" className="btn btn--ghost" style={{ 
             padding: '16px 36px', 
             fontSize: '18px', 
             borderRadius: '12px', 
@@ -117,7 +117,7 @@ export function Landing() {
             fontWeight: 600
           }}>
             Browse Jobs
-          </Link>
+          </Link> */}
         </div>
 
         {/* Trusted By Banner */}
@@ -139,7 +139,7 @@ export function Landing() {
       <section className="container" style={{ marginTop: '60px', position: 'relative', zIndex: 1 }}>
         <div className="grid grid--3">
           <div className="card" style={{ 
-            padding: '40px 32px', 
+            padding: '40px 10px', 
             textAlign: 'center', 
             display: 'flex', 
             flexDirection: 'column', 
