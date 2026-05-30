@@ -5,10 +5,13 @@ const TOKEN_KEY = 'tb_token'
 
 export const apiConfig = apiMap
 
-const rawBaseUrl = import.meta.env.VITE_API_URL || apiMap.baseUrl
+const rawBaseUrl = apiMap.baseUrl
 const normalizedBaseUrl = rawBaseUrl.endsWith(apiMap.baseUrl)
   ? rawBaseUrl
   : `${rawBaseUrl.replace(/\/+$/, '')}${apiMap.baseUrl}`
+
+console.log("raw url: ", rawBaseUrl);
+console.log("normalised url: ", normalizedBaseUrl);
 
 export const api = axios.create({
   baseURL: normalizedBaseUrl,

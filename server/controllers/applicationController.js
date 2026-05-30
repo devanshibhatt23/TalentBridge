@@ -1,5 +1,7 @@
 const Application = require('../models/Application');
 const Job = require('../models/Job');
+const pdfParse = require('pdf-parse');
+const { GoogleGenAI } = require('@google/genai');
 
 // ============================================
 // APPLY TO JOB — Candidate applies to a job
@@ -59,12 +61,67 @@ const applyToJob = async (req, res) => {
         }
       : undefined;
 
+    let matchScore = undefined;
+    
+    console.log('[DEBUG] applyToJob - req.file received:', !!req.file, 'mimetype:', req.file?.mimetype);
+
+    if (req.file && req.file.mimetype === 'application/pdf') {
+      try {
+        console.log('[DEBUG] applyToJob - Parsing PDF...');
+        // Parse PDF content
+        const pdfData = await pdfParse(req.file.buffer);
+        const resumeText = pdfData.text;
+        console.log(`[DEBUG] applyToJob - PDF parsed successfully. Extracted text length: ${resumeText.length}`);
+
+        // Construct AI prompt
+        const prompt = `
+          You are an expert technical recruiter. Evaluate the following resume against the given job description and requirements.
+          Calculate a matching score from 0 to 100 representing how well the candidate's skills and experience match the job.
+          Provide ONLY the numeric score as your response (e.g., 85), nothing else.
+
+          Job Title: ${job.title}
+          Job Description: ${job.description}
+          Job Requirements: ${job.requirements}
+          Skills Needed: ${job.skills.join(', ')}
+
+          Resume:
+          ${resumeText}
+        `;
+
+        // Initialize Google AI SDK
+        console.log('[DEBUG] applyToJob - Initializing Google GenAI and calling gemini-2.5-flash...');
+        const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
+        const aiResponse = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+        });
+        
+        // Parse the numeric score
+        const generatedText = aiResponse.text.trim();
+        console.log('[DEBUG] applyToJob - Google GenAI raw response text:', generatedText);
+        
+        const score = parseInt(generatedText.replace(/[^0-9]/g, ''), 10);
+        console.log('[DEBUG] applyToJob - Parsed score from text:', score);
+        
+        if (!isNaN(score) && score >= 0 && score <= 100) {
+          matchScore = score;
+          console.log('[DEBUG] applyToJob - matchScore set successfully to:', matchScore);
+        } else {
+          console.warn('[DEBUG] applyToJob - Parsed score is invalid (NaN or out of bounds).');
+        }
+      } catch (aiError) {
+        console.error('Error generating AI match score:', aiError);
+        // Continue without score if AI fails
+      }
+    }
+
     // Create the application
     const application = await Application.create({
       job: jobId,
       candidate: req.user._id,
       coverLetter,
       resume: resumePayload,
+      matchScore,
       statusHistory: [
         {
           status: 'applied',
@@ -157,7 +214,7 @@ const getJobApplications = async (req, res) => {
     const applications = await Application.find({ job: jobId })
       .select('-resume.data')
       .populate('candidate', 'name email profile')
-      .sort({ createdAt: -1 });
+      .sort({ matchScore: -1, createdAt: -1 });
 
     res.status(200).json({
       success: true,

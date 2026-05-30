@@ -48,6 +48,13 @@ const applicationSchema = new mongoose.Schema(
       default: 'applied',
     },
 
+    // AI generated match score (0-100)
+    matchScore: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
+
     // ============================================
     // THE AUDIT TRAIL
     // ============================================
