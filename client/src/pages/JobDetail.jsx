@@ -12,6 +12,7 @@ import {
   updateApplicationStatus,
   updateJob,
 } from '../services/api.js'
+import { formatJobType, formatDate } from '../utils/formatters.js'
 import apiMap from '../api.json'
 
 export function JobDetail() {
@@ -163,7 +164,8 @@ export function JobDetail() {
         <div>
           <h1 className="h1">{job.title}</h1>
           <p className="muted">
-            {job.company} · {job.location} · {job.jobType}
+            {job.company} · {job.location} · {formatJobType(job.jobType)}
+            {job.deadline && ` · Apply by ${formatDate(job.deadline)}`}
           </p>
         </div>
         <div className="page__actions">
@@ -216,15 +218,21 @@ export function JobDetail() {
               </label>
               <label className="field">
                 <span className="field__label">Resume (PDF, optional)</span>
-                <input
-                  className="input"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                />
-                {resumeFile ? (
-                  <p className="muted">Selected file: {resumeFile.name}</p>
-                ) : null}
+                <div className="file-upload">
+                  <input
+                    id="resume-upload"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                  />
+                  <label htmlFor="resume-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                    {resumeFile ? (
+                      <span className="resume-badge">📄 {resumeFile.name}</span>
+                    ) : (
+                      <span>Click to upload resume</span>
+                    )}
+                  </label>
+                </div>
               </label>
               <button className="btn btn--primary" type="submit">
                 Submit application

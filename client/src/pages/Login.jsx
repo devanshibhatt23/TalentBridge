@@ -10,6 +10,7 @@ export function Login() {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -33,14 +34,21 @@ export function Login() {
   }
 
   return (
-    <div className="container page">
-      <div className="auth">
-        <div className="auth__header">
+    <div className="auth-hero">
+      <div className="auth-hero__orb"></div>
+      
+      <div className="auth-hero__inner">
+        <div className="auth-hero__logo">
+          <span className="auth-hero__mark">TB</span>
+          <span className="auth-hero__brand">TalentBridge</span>
+        </div>
+        
+        <div className="auth-hero__header">
           <h1 className="h1">Welcome back</h1>
-          <p className="muted">Sign in with your TalentBridge account.</p>
+          <p className="muted">Sign in to continue connecting with top talent.</p>
         </div>
 
-        <form className="card auth__card" onSubmit={onSubmit}>
+        <form className="auth-card--glass" onSubmit={onSubmit}>
           <Alert type="error">{error}</Alert>
 
           <label className="field">
@@ -58,18 +66,29 @@ export function Login() {
 
           <label className="field">
             <span className="field__label">Password</span>
-            <input
-              className="input"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div className="field--password">
+              <input
+                className="input"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                className="field__toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </label>
 
-          <button className="btn btn--primary" disabled={isSubmitting} type="submit">
+          <button className="btn btn--primary" disabled={isSubmitting} type="submit" style={{ marginTop: '8px' }}>
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
 

@@ -41,9 +41,12 @@ export function Navbar() {
               <NavLink className="navlink navlink--with-badge" to="/messages">
                 Messages
                 {totalUnread > 0 && (
-                  <span className="navlink__badge" aria-label={`${totalUnread} unread messages`}>
-                    {totalUnread > 99 ? '99+' : totalUnread}
-                  </span>
+                  <>
+                    <span className="navlink__badge" aria-label={`${totalUnread} unread messages`}>
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
+                    <span className="navlink__pulse" aria-hidden="true"></span>
+                  </>
                 )}
               </NavLink>
               {user.role === 'candidate' ? (

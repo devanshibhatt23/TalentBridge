@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert } from '../components/Alert.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
+import { JobCard } from '../components/JobCard.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { fetchJobs, fetchMyApplications } from '../services/api.js'
 
@@ -19,7 +20,7 @@ export function CandidateDashboard() {
           fetchMyApplications(),
           fetchJobs({ limit: 4, sortBy: 'createdAt', order: 'desc' }),
         ])
-        setApplications(appsRes.data?.applications?.slice(0, 4) || [])
+        setApplications(appsRes.data?.applications || [])
         setRecommended(jobsRes.data?.jobs || [])
       } catch (err) {
         setError(err.message)
@@ -30,64 +31,105 @@ export function CandidateDashboard() {
     load()
   }, [])
 
+  const activeApplications = applications.filter(app => app.status !== 'withdrawn' && app.status !== 'rejected')
+
   return (
     <div className="container page">
-      <div className="page__header">
+      {/* Hero Welcome Section */}
+      <div 
+        className="card" 
+        style={{ 
+          marginBottom: '24px', 
+          background: 'linear-gradient(135deg, rgba(47, 129, 247, 0.15) 0%, rgba(120, 75, 255, 0.05) 100%)',
+          border: '1px solid rgba(47, 129, 247, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px'
+        }}
+      >
         <div>
-          <h1 className="h1">Candidate dashboard</h1>
-          <p className="muted">Welcome, {user?.name}</p>
+          <h1 className="h1" style={{ fontSize: '28px', marginBottom: '8px' }}>
+            Welcome back, {user?.name.split(' ')[0]} 👋
+          </h1>
+          <p className="muted" style={{ margin: 0, fontSize: '15px' }}>
+            You have <strong style={{ color: 'var(--text)' }}>{activeApplications.length} active</strong> application{activeApplications.length !== 1 ? 's' : ''}. Keep exploring new opportunities!
+          </p>
         </div>
-        <Link className="btn btn--primary" to="/jobs">
-          Browse jobs
-        </Link>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Link className="btn btn--primary" to="/jobs">
+            Browse Jobs
+          </Link>
+          <Link className="btn btn--ghost" to="/profile">
+            Update Profile
+          </Link>
+        </div>
       </div>
 
       <Alert type="error">{error}</Alert>
 
       <div className="grid grid--2">
-        <section className="card">
+        <section className="stack">
           <div className="card__header-row">
-            <h2 className="h2">Applied jobs</h2>
-            <Link className="navlink" to="/my-applications">
+            <h2 className="h2" style={{ margin: 0 }}>Recent Applications</h2>
+            <Link className="navlink" to="/my-applications" style={{ fontSize: '14px' }}>
               View all
             </Link>
           </div>
           {loading ? (
-            <p className="muted">Loading…</p>
+            <div className="skeleton" style={{ height: '100px' }}></div>
           ) : applications.length === 0 ? (
-            <p className="muted">No applications yet.</p>
+            <div className="card" style={{ textAlign: 'center', padding: '32px 16px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>📝</div>
+              <p className="muted" style={{ margin: '0 0 16px 0' }}>You haven't applied to any jobs yet.</p>
+              <Link className="btn btn--secondary" to="/jobs">Find your first job</Link>
+            </div>
           ) : (
-            <ul className="simple-list">
-              {applications.map((app) => (
-                <li key={app._id}>
-                  <Link to={`/jobs/${app.job?._id}`}>{app.job?.title}</Link>
-                  <StatusBadge status={app.status} />
-                </li>
+            <div className="stack">
+              {applications.slice(0, 3).map((app) => (
+                <div key={app._id} className="card" style={{ padding: '14px 16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 600 }}>
+                        <Link to={`/jobs/${app.job?._id}`} style={{ textDecoration: 'none' }}>
+                          {app.job?.title}
+                        </Link>
+                      </h3>
+                      <p className="muted" style={{ margin: 0, fontSize: '13px' }}>
+                        {app.job?.company} · {app.job?.location}
+                      </p>
+                    </div>
+                    <StatusBadge status={app.status} />
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </section>
 
-        <section className="card">
+        <section className="stack">
           <div className="card__header-row">
-            <h2 className="h2">Recommended positions</h2>
-            <Link className="navlink" to="/jobs">
+            <h2 className="h2" style={{ margin: 0 }}>Recommended for you</h2>
+            <Link className="navlink" to="/jobs" style={{ fontSize: '14px' }}>
               Browse
             </Link>
           </div>
           {loading ? (
-            <p className="muted">Loading…</p>
+            <>
+              <div className="skeleton" style={{ height: '140px' }}></div>
+              <div className="skeleton" style={{ height: '140px' }}></div>
+            </>
           ) : recommended.length === 0 ? (
-            <p className="muted">No open jobs right now.</p>
+            <div className="card">
+              <p className="muted">No open jobs right now. Check back later!</p>
+            </div>
           ) : (
-            <ul className="simple-list">
-              {recommended.map((job) => (
-                <li key={job._id}>
-                  <Link to={`/jobs/${job._id}`}>{job.title}</Link>
-                  <span className="muted">{job.company}</span>
-                </li>
+            <div className="stack">
+              {recommended.slice(0, 3).map((job) => (
+                <JobCard key={job._id} job={job} />
               ))}
-            </ul>
+            </div>
           )}
         </section>
       </div>

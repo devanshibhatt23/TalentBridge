@@ -82,23 +82,16 @@ export function MyApplications() {
                   Last update: {app.statusHistory[app.statusHistory.length - 1]?.note}
                 </p>
               ) : null}
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {app.resume?.filename && (
-                  <span style={{
-                    display: 'inline-block',
-                    fontSize: '0.875rem',
-                    padding: '0.25rem 0.5rem',
-                    backgroundColor: 'var(--color-success-light)',
-                    color: 'var(--color-success)',
-                    borderRadius: '0.25rem',
-                  }}>
+                  <span className="resume-badge">
                     📄 Resume attached
                   </span>
                 )}
                 <button
                   className="btn btn--secondary"
                   onClick={() => setSelectedApp(app)}
-                  style={{ fontSize: '0.875rem', padding: '0.25rem 0.75rem', marginBottom: 0 }}
+                  style={{ padding: '6px 12px', marginBottom: 0 }}
                 >
                   View Details
                 </button>

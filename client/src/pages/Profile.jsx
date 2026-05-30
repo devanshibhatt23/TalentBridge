@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Alert } from '../components/Alert.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { formatStatus } from '../utils/formatters.js'
 
 export function Profile() {
   const { user, refreshUser } = useAuth()
@@ -26,8 +27,8 @@ export function Profile() {
     <div className="container page">
       <div className="page__header">
         <div>
-          <h1 className="h1">Profile</h1>
-          <p className="muted">Account details from `GET /api/auth/me`.</p>
+          <h1 className="h1">My Profile</h1>
+          <p className="muted">Manage your personal information and preferences.</p>
         </div>
       </div>
 
@@ -35,7 +36,7 @@ export function Profile() {
 
       <div className="grid grid--2">
         <section className="card">
-          <h2 className="h2">Basics</h2>
+          <h2 className="h2">Account Details</h2>
           {loading ? (
             <p className="muted">Loading…</p>
           ) : (
@@ -44,8 +45,8 @@ export function Profile() {
               <dd>{user?.name}</dd>
               <dt>Email</dt>
               <dd>{user?.email}</dd>
-              <dt>Role</dt>
-              <dd className="muted">{user?.role}</dd>
+              <dt>Account Type</dt>
+              <dd className="muted">{formatStatus(user?.role)}</dd>
               {user?.company ? (
                 <>
                   <dt>Company</dt>
@@ -63,10 +64,9 @@ export function Profile() {
         </section>
 
         <section className="card">
-          <h2 className="h2">Next</h2>
+          <h2 className="h2">Coming Soon</h2>
           <p className="muted">
-            Next improvements: editable profile (candidate fields like skills/education),
-            and resume upload wiring.
+            We are working on adding more features to your profile. Soon you'll be able to update your skills, upload multiple resumes, and manage your portfolio directly from here.
           </p>
         </section>
       </div>

@@ -1,3 +1,5 @@
+import { formatStatus } from '../utils/formatters.js'
+
 const STATUS_CLASS = {
   applied: 'status--applied',
   screening: 'status--screening',
@@ -13,5 +15,5 @@ const STATUS_CLASS = {
 export function StatusBadge({ status }) {
   const key = status?.toLowerCase()
   const cls = STATUS_CLASS[key] || 'status--default'
-  return <span className={`status ${cls}`}>{status}</span>
+  return <span className={`status ${cls}`}>{formatStatus(status)}</span>
 }

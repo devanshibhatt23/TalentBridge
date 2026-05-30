@@ -3,6 +3,7 @@ import { JobCard } from '../components/JobCard.jsx'
 import { SearchBar } from '../components/SearchBar.jsx'
 import { Alert } from '../components/Alert.jsx'
 import { fetchJobs } from '../services/api.js'
+import { formatJobType } from '../utils/formatters.js'
 import apiMap from '../api.json'
 
 export function Jobs() {
@@ -69,7 +70,7 @@ export function Jobs() {
             <option value="">All types</option>
             {apiMap.jobTypes.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {formatJobType(type)}
               </option>
             ))}
           </select>
