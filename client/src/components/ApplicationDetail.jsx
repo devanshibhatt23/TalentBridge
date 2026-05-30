@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { downloadResume, getResumeInfo, updateResume } from '../services/api.js'
+import { downloadResume } from '../services/api.js'
 import { Alert } from './Alert.jsx'
 
-export function ApplicationDetail({ application, onClose, onResumeUpdated }) {
+export function ApplicationDetail({ application, onClose }) {
   const [resumeInfo, setResumeInfo] = useState(null)
   const [isLoadingResume, setIsLoadingResume] = useState(false)
-  const [isUpdatingResume, setIsUpdatingResume] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -35,27 +34,7 @@ export function ApplicationDetail({ application, onClose, onResumeUpdated }) {
     }
   }
 
-  async function handleUpdateResume(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    try {
-      setError('')
-      setSuccess('')
-      setIsUpdatingResume(true)
-      const res = await updateResume(application._id, file)
-      setResumeInfo(res.data?.application?.resume)
-      setSuccess('Resume updated successfully!')
-      if (onResumeUpdated) {
-        onResumeUpdated(res.data?.application)
-      }
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (err) {
-      setError(err.message || 'Failed to update resume')
-    } finally {
-      setIsUpdatingResume(false)
-    }
-  }
+  // Replace functionality removed as per new business logic.
 
   function formatFileSize(bytes) {
     if (!bytes) return '0 B'
@@ -94,14 +73,16 @@ export function ApplicationDetail({ application, onClose, onResumeUpdated }) {
       aria-modal="true"
     >
       <div
+        className="auth-card--glass"
         style={{
-          backgroundColor: 'var(--color-background)',
-          borderRadius: '0.5rem',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           maxWidth: '600px',
           width: '100%',
           maxHeight: '90vh',
           overflowY: 'auto',
+          padding: 0,
+          gap: 0,
+          display: 'flex',
+          flexDirection: 'column'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -146,61 +127,46 @@ export function ApplicationDetail({ application, onClose, onResumeUpdated }) {
             {resumeInfo?.filename ? (
               <div
                 style={{
-                  padding: '1rem',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '0.5rem',
-                  backgroundColor: 'var(--color-surface)',
+                  padding: '16px',
+                  border: '1px solid rgba(139, 92, 246, 0.35)',
+                  borderRadius: '12px',
+                  background: 'rgba(139, 92, 246, 0.08)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '12px'
                 }}
               >
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <div style={{ fontWeight: 500, marginBottom: '0.25rem' }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '4px' }}>
                     {resumeInfo.filename}
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                  <div className="muted" style={{ fontSize: '13px' }}>
                     {formatFileSize(resumeInfo.size)} • Uploaded {formatDate(resumeInfo.uploadedAt)}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button
-                    className="btn btn--secondary"
-                    onClick={handleDownloadResume}
-                    disabled={isLoadingResume}
-                  >
-                    {isLoadingResume ? 'Downloading…' : 'Download'}
-                  </button>
-                  <label className="btn btn--secondary" style={{ cursor: 'pointer', marginBottom: 0 }}>
-                    {isUpdatingResume ? 'Updating…' : 'Replace'}
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleUpdateResume}
-                      disabled={isUpdatingResume}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </div>
+                <button
+                  className="btn btn--primary"
+                  onClick={handleDownloadResume}
+                  disabled={isLoadingResume}
+                >
+                  {isLoadingResume ? 'Downloading…' : 'Download PDF'}
+                </button>
               </div>
+                
             ) : (
               <div
                 style={{
-                  padding: '1rem',
-                  border: '1px dashed var(--color-border)',
-                  borderRadius: '0.5rem',
+                  padding: '24px',
+                  border: '1px dashed var(--border)',
+                  borderRadius: '12px',
                   textAlign: 'center',
-                  color: 'var(--color-text-muted)',
+                  color: 'var(--faint)',
+                  background: 'rgba(255,255,255,0.02)'
                 }}
               >
-                <p style={{ margin: '0 0 0.5rem 0' }}>No resume attached to this application.</p>
-                <label className="btn btn--primary" style={{ cursor: 'pointer', marginBottom: 0 }}>
-                  Upload Resume
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleUpdateResume}
-                    disabled={isUpdatingResume}
-                    style={{ display: 'none' }}
-                  />
-                </label>
+                <p style={{ margin: 0 }}>No resume attached to this application.</p>
               </div>
             )}
           </div>
@@ -213,14 +179,15 @@ export function ApplicationDetail({ application, onClose, onResumeUpdated }) {
               </h3>
               <div
                 style={{
-                  padding: '1rem',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '0.5rem',
-                  backgroundColor: 'var(--color-surface)',
+                  padding: '16px',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.02)',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
-                  fontSize: '0.95rem',
-                  lineHeight: '1.5',
+                  fontSize: '15px',
+                  lineHeight: '1.6',
+                  color: 'var(--text)'
                 }}
               >
                 {application.coverLetter}
