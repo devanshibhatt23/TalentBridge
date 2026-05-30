@@ -28,6 +28,17 @@ export function NotificationProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
+  const addToast = useCallback((type, title, preview) => {
+    const toastId = `${Date.now()}-${Math.random()}`
+    setToasts((prev) => [
+      ...prev,
+      { id: toastId, type, senderName: title, preview },
+    ])
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== toastId))
+    }, 3000)
+  }, [])
+
   useEffect(() => {
     if (!user) {
       setTotalUnread(0)
@@ -87,8 +98,9 @@ export function NotificationProvider({ children }) {
       clearUnread,
       resetUnread,
       dismissToast,
+      addToast,
     }),
-    [totalUnread, toasts, setActiveConversation, clearUnread, resetUnread, dismissToast],
+    [totalUnread, toasts, setActiveConversation, clearUnread, resetUnread, dismissToast, addToast],
   )
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>

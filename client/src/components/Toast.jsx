@@ -18,6 +18,7 @@ export function ToastContainer() {
     <div className="toast-container" aria-live="polite">
       {toasts.map((t) => {
         const typeClass = t.type ? `toast--${t.type}` : 'toast--message'
+        const icon = t.type === 'success' ? '✅' : t.type === 'error' ? '❌' : '💬'
         
         return (
           <div 
@@ -26,7 +27,7 @@ export function ToastContainer() {
             role="status"
             onClick={() => handleToastClick(t)}
           >
-            <div className="toast__icon">💬</div>
+            <div className="toast__icon">{icon}</div>
             <div className="toast__body">
               <div className="toast__sender">{t.senderName}</div>
               <div className="toast__preview">{t.preview}</div>
