@@ -226,53 +226,77 @@ export function JobDetail() {
             </div>
           )}
 
-          {isOwner ? (
-            <section className="card">
-              <h2 className="h2">Applications ({applications.length})</h2>
-              {applications.length === 0 ? (
-                <p className="muted">No applications yet.</p>
-              ) : (
-                <ul className="app-list">
-                  {applications.map((app) => (
-                    <li key={app._id} className="app-list__item">
-                      <div>
-                        <strong>{app.candidate?.name}</strong>
-                        {app.matchScore !== undefined && app.matchScore !== null ? (
-                          <span className="tag" style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' }}>
-                            Match: {app.matchScore}%
-                          </span>
-                        ) : null}
-                        <p className="muted">{app.candidate?.email}</p>
-                        <StatusBadge status={app.status} />
-                      </div>
-                      <select
-                        className="input"
-                        value={app.status}
-                        onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                      >
-                        {apiMap.applicationStatuses.map((status) => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
-                      {app.resume?.filename ? (
-                        <button
-                          className="btn btn--secondary"
-                          type="button"
-                          onClick={() => handleDownloadResume(app)}
-                        >
-                          Download resume
-                        </button>
-                      ) : (
-                        <p className="muted">No resume uploaded.</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ) : null}
         </aside>
       </div>
+
+      {isOwner ? (
+        <section className="card section-gap" style={{ marginTop: '24px' }}>
+          <h2 className="h2" style={{ marginBottom: '16px' }}>Applications Board ({applications.length})</h2>
+          {applications.length === 0 ? (
+            <p className="muted">No applications yet.</p>
+          ) : (
+            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }}>
+              {apiMap.applicationStatuses.map(status => {
+                const columnApps = applications.filter(app => app.status === status);
+                if (columnApps.length === 0 && (status === 'withdrawn' || status === 'rejected')) return null; // hide empty negative columns
+
+                return (
+                  <div key={status} style={{ minWidth: '300px', flex: '0 0 auto', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '16px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ margin: '0 0 16px', textTransform: 'capitalize', fontSize: '15px', color: 'var(--muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      {status} 
+                      <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '99px', fontSize: '12px', color: 'var(--text)' }}>
+                        {columnApps.length}
+                      </span>
+                    </h3>
+                    <div className="stack">
+                      {columnApps.map(app => (
+                        <div key={app._id} className="card" style={{ padding: '16px', background: 'rgba(0,0,0,0.2)' }}>
+                          <div style={{ marginBottom: '12px' }}>
+                            <strong style={{ fontSize: '16px', color: 'var(--text)' }}>{app.candidate?.name}</strong>
+                            <p className="muted" style={{ margin: 0, fontSize: '13px' }}>{app.candidate?.email}</p>
+                          </div>
+                          
+                          {app.matchScore !== undefined && app.matchScore !== null && (
+                            <div style={{ marginBottom: '12px' }}>
+                              <span style={{ display: 'inline-flex', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--accent-dim)' }}>
+                                ✨ Match: {app.matchScore}%
+                              </span>
+                            </div>
+                          )}
+                          
+                          <select
+                            className="input"
+                            value={app.status}
+                            onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                            style={{ width: '100%', marginBottom: '8px', padding: '8px', fontSize: '13px' }}
+                          >
+                            {apiMap.applicationStatuses.map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                          
+                          {app.resume?.filename ? (
+                            <button
+                              className="btn btn--secondary"
+                              type="button"
+                              onClick={() => handleDownloadResume(app)}
+                              style={{ width: '100%', fontSize: '13px', padding: '8px' }}
+                            >
+                              📄 Resume
+                            </button>
+                          ) : (
+                            <p className="muted" style={{ fontSize: '12px', textAlign: 'center', margin: '8px 0 0' }}>No resume uploaded.</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      ) : null}
 
       <ProfileSetupModal
         isOpen={showSetupModal}

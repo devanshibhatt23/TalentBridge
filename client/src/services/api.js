@@ -17,16 +17,49 @@ export const api = axios.create({
   baseURL: normalizedBaseUrl,
 })
 
+const cache = new Map()
+const CACHE_TTL = 2 * 60 * 1000 // 2 minutes
+
+export function clearApiCache() {
+  cache.clear()
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
+  if (config.method === 'get') {
+    const key = config.url + JSON.stringify(config.params || {})
+    const cached = cache.get(key)
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      config.adapter = () =>
+        Promise.resolve({
+          data: cached.data,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        })
+    }
+  } else {
+    // If it's a POST/PUT/DELETE, clear cache to ensure fresh data
+    cache.clear()
+  }
+
   return config
 })
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (res.config.method === 'get') {
+      const key = res.config.url + JSON.stringify(res.config.params || {})
+      cache.set(key, { data: res.data, timestamp: Date.now() })
+    }
+    return res
+  },
   (error) => {
     console.error('[API ERROR]', {
       url: error.config?.url,
