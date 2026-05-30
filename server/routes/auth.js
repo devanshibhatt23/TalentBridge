@@ -6,9 +6,21 @@
 // ============================================
 
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
-const { register, login, getMe } = require('../controllers/authController');
+const { register, login, getMe, updateProfile, uploadAvatar } = require('../controllers/authController');
 const auth = require('../middleware/auth');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only images are allowed.'));
+    }
+    cb(null, true);
+  },
+});
 
 // POST /api/auth/register
 // Route for user registration
@@ -23,5 +35,13 @@ router.post('/login', login);
 // Notice we pass the 'auth' middleware BEFORE 'getMe'
 // This ensures only logged-in users can access this route
 router.get('/me', auth, getMe);
+
+// PUT /api/auth/profile
+// Route to update user profile
+router.put('/profile', auth, updateProfile);
+
+// PUT /api/auth/avatar
+// Route to update user profile image
+router.put('/avatar', auth, upload.single('avatar'), uploadAvatar);
 
 module.exports = router;

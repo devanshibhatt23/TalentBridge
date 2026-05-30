@@ -10,6 +10,7 @@ export function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [phone, setPhone] = useState('')
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('candidate')
@@ -38,15 +39,43 @@ export function Register() {
   }
 
   return (
-    <div className="container page">
-      <div className="auth">
-        <div className="auth__header">
+    <div className="auth-hero" style={{ margin: '40px 0' }}>
+      <div className="auth-hero__orb"></div>
+
+      <div className="auth-hero__inner">
+        <div className="auth-hero__logo">
+          <span className="auth-hero__mark">TB</span>
+          <span className="auth-hero__brand">TalentBridge</span>
+        </div>
+
+        <div className="auth-hero__header">
           <h1 className="h1">Create your account</h1>
           <p className="muted">Join as a recruiter or candidate.</p>
         </div>
 
-        <form className="card auth__card" onSubmit={onSubmit}>
+        <form className="auth-card--glass" onSubmit={onSubmit}>
           <Alert type="error">{error}</Alert>
+
+          <div className="role-selector">
+            <button
+              className={role === 'candidate' ? 'role-selector__btn is-active' : 'role-selector__btn'}
+              type="button"
+              onClick={() => setRole('candidate')}
+            >
+              <span className="role-selector__icon">👤</span>
+              <span className="role-selector__label">Candidate</span>
+              <span className="role-selector__desc">Find your next role</span>
+            </button>
+            <button
+              className={role === 'recruiter' ? 'role-selector__btn is-active' : 'role-selector__btn'}
+              type="button"
+              onClick={() => setRole('recruiter')}
+            >
+              <span className="role-selector__icon">🏢</span>
+              <span className="role-selector__label">Recruiter</span>
+              <span className="role-selector__desc">Hire top talent</span>
+            </button>
+          </div>
 
           <label className="field">
             <span className="field__label">Full name</span>
@@ -74,15 +103,26 @@ export function Register() {
 
           <label className="field">
             <span className="field__label">Password</span>
-            <input
-              className="input"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={6}
-              required
-            />
+            <div className="field--password">
+              <input
+                className="input"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
+                required
+              />
+              <button
+                type="button"
+                className="field__toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </label>
 
           <label className="field">
@@ -95,28 +135,8 @@ export function Register() {
             />
           </label>
 
-          <label className="field">
-            <span className="field__label">Role</span>
-            <div className="segmented">
-              <button
-                className={role === 'candidate' ? 'segmented__btn is-active' : 'segmented__btn'}
-                type="button"
-                onClick={() => setRole('candidate')}
-              >
-                Candidate
-              </button>
-              <button
-                className={role === 'recruiter' ? 'segmented__btn is-active' : 'segmented__btn'}
-                type="button"
-                onClick={() => setRole('recruiter')}
-              >
-                Recruiter
-              </button>
-            </div>
-          </label>
-
-          {role === 'recruiter' ? (
-            <label className="field">
+          {role === 'recruiter' && (
+            <label className="field field--slide">
               <span className="field__label">Company</span>
               <input
                 className="input"
@@ -126,9 +146,9 @@ export function Register() {
                 required
               />
             </label>
-          ) : null}
+          )}
 
-          <button className="btn btn--primary" disabled={isSubmitting} type="submit">
+          <button className="btn btn--primary" disabled={isSubmitting} type="submit" style={{ marginTop: '8px' }}>
             {isSubmitting ? 'Creating…' : 'Create account'}
           </button>
 

@@ -10,20 +10,62 @@ const normalizedBaseUrl = rawBaseUrl.endsWith(apiMap.baseUrl)
   ? rawBaseUrl
   : `${rawBaseUrl.replace(/\/+$/, '')}${apiMap.baseUrl}`
 
-console.log("raw url: ", rawBaseUrl);
-console.log("normalised url: ", normalizedBaseUrl);
-
 export const api = axios.create({
   baseURL: normalizedBaseUrl,
 })
+
+const cache = new Map()
+const CACHE_TTL = 2 * 60 * 1000 // 2 minutes
+
+export function clearApiCache() {
+  cache.clear()
+}
+
+export function readApiCache(group, name, params = {}) {
+  try {
+    const url = endpointPath(group, name, params)
+    const key = url + JSON.stringify(params)
+    const cached = cache.get(key)
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null
+}
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
+  if (config.method?.toLowerCase() !== 'get') {
+    // If it's a POST/PUT/DELETE, clear cache to ensure fresh data
+    console.log('[API] Clearing cache due to mutation:', config.method, config.url)
+    cache.clear()
+  }
+
   return config
 })
+
+// Override api.get to implement robust in-memory caching
+const originalGet = api.get
+api.get = async function (url, config = {}) {
+  const key = url + JSON.stringify(config.params || {})
+  const cached = cache.get(key)
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log('[API] Cache HIT:', key)
+    return Promise.resolve({ data: cached.data, status: 200, statusText: 'OK', config })
+  }
+
+  console.log('[API] Cache MISS:', key)
+  const response = await originalGet.call(api, url, config)
+  cache.set(key, { data: response.data, timestamp: Date.now() })
+  return response
+}
 
 api.interceptors.response.use(
   (res) => res,
@@ -90,6 +132,20 @@ export async function loginUser(payload) {
 
 export async function fetchMe() {
   const { data } = await api.get(endpointPath('auth', 'me'))
+  return data
+}
+
+export async function updateProfile(payload) {
+  const { data } = await api.put(endpointPath('auth', 'profile'), payload)
+  return data
+}
+
+export async function uploadAvatar(file) {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  const { data } = await api.put(endpointPath('auth', 'avatar'), formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
   return data
 }
 

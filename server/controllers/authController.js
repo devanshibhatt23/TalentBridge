@@ -231,4 +231,97 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe };
+// ============================================
+// UPDATE PROFILE — Update candidate/recruiter profile
+// ============================================
+// PUT /api/auth/profile
+// ============================================
+const updateProfile = async (req, res) => {
+  try {
+    const { name, phone, company, profile } = req.body;
+    
+    // Find the current user
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Update basic fields
+    if (name) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (user.role === 'recruiter' && company) user.company = company;
+
+    // Update profile fields
+    if (profile) {
+      if (!user.profile) user.profile = {};
+      
+      const allowedProfileFields = ['headline', 'bio', 'experience', 'education', 'location'];
+      allowedProfileFields.forEach(field => {
+        if (profile[field] !== undefined) {
+          user.profile[field] = profile[field];
+        }
+      });
+      
+      // Handle skills array separately
+      if (profile.skills && Array.isArray(profile.skills)) {
+        user.profile.skills = profile.skills.map(s => s.trim()).filter(Boolean);
+      } else if (typeof profile.skills === 'string') {
+        user.profile.skills = profile.skills.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: { user },
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating profile.',
+      error: error.message,
+    });
+  }
+};
+
+// ============================================
+// UPLOAD AVATAR
+// ============================================
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image provided.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Convert buffer to base64
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+    const dataUri = `data:${mimeType};base64,${base64Image}`;
+
+    user.avatar = dataUri;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Avatar updated successfully',
+      data: { user },
+    });
+  } catch (error) {
+    console.error('Upload avatar error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while uploading avatar.',
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile, uploadAvatar };
