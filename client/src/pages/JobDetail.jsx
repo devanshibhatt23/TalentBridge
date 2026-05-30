@@ -243,6 +243,11 @@ export function JobDetail() {
                     <li key={app._id} className="app-list__item">
                       <div>
                         <strong>{app.candidate?.name}</strong>
+                        {app.matchScore !== undefined && app.matchScore !== null ? (
+                          <span className="tag" style={{ marginLeft: '8px', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' }}>
+                            Match: {app.matchScore}%
+                          </span>
+                        ) : null}
                         <p className="muted">{app.candidate?.email}</p>
                         <StatusBadge status={app.status} />
                       </div>

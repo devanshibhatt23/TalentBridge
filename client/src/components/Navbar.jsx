@@ -1,10 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useNotifications } from '../context/NotificationContext.jsx'
 import { ProfileMenu } from './ProfileMenu.jsx'
 
 export function Navbar() {
   const navigate = useNavigate()
   const { user, isAuthenticated, dashboardPath, logout } = useAuth()
+  const { totalUnread } = useNotifications()
 
   function onSignOut() {
     logout()
@@ -36,8 +38,13 @@ export function Navbar() {
               <NavLink className="navlink" to="/jobs">
                 Jobs
               </NavLink>
-              <NavLink className="navlink" to="/messages">
+              <NavLink className="navlink navlink--with-badge" to="/messages">
                 Messages
+                {totalUnread > 0 && (
+                  <span className="navlink__badge" aria-label={`${totalUnread} unread messages`}>
+                    {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                )}
               </NavLink>
               {user.role === 'candidate' ? (
                 <NavLink className="navlink" to="/my-applications">

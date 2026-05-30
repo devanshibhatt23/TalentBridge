@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useNotifications } from '../context/NotificationContext.jsx'
 import {
   fetchConversationMessages,
   fetchConversations,
@@ -17,20 +18,56 @@ function formatTime(iso) {
   }
 }
 
-function messageBadge(type) {
-  if (type === 'oa_link') return 'OA'
-  if (type === 'interview_link') return 'Interview'
-  return null
+// URL regex to detect links in message content
+const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi
+
+function renderContentWithLinks(content) {
+  if (!content) return null
+
+  const parts = []
+  let lastIndex = 0
+  let match
+
+  // Reset regex state
+  URL_REGEX.lastIndex = 0
+
+  while ((match = URL_REGEX.exec(content)) !== null) {
+    // Add text before the URL
+    if (match.index > lastIndex) {
+      parts.push(content.slice(lastIndex, match.index))
+    }
+    // Add the clickable link
+    const url = match[0]
+    parts.push(
+      <a
+        key={`${match.index}-${url}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="msg__link"
+      >
+        {url}
+      </a>
+    )
+    lastIndex = match.index + url.length
+  }
+
+  // Add remaining text after last URL
+  if (lastIndex < content.length) {
+    parts.push(content.slice(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : content
 }
 
 export function Messages() {
   const { user } = useAuth()
+  const { setActiveConversation, clearUnread, resetUnread } = useNotifications()
   const [loading, setLoading] = useState(true)
   const [conversations, setConversations] = useState([])
   const [activeId, setActiveId] = useState(null)
   const [messages, setMessages] = useState([])
   const [compose, setCompose] = useState('')
-  const [composeType, setComposeType] = useState('text')
   const [unreadCounts, setUnreadCounts] = useState({})
   
   // New search state
@@ -51,6 +88,20 @@ export function Messages() {
     [conversations, activeId],
   )
 
+  // Keep the notification context in sync with the active conversation
+  useEffect(() => {
+    setActiveConversation(activeId)
+    return () => setActiveConversation(null)
+  }, [activeId, setActiveConversation])
+
+  // Reset global unread count when entering the messages page
+  useEffect(() => {
+    return () => {
+      // When leaving messages page, clear active conversation
+      setActiveConversation(null)
+    }
+  }, [setActiveConversation])
+
   async function loadConversations(selectFirst = true) {
     const res = await fetchConversations()
     const list = res.data?.conversations || []
@@ -69,19 +120,15 @@ export function Messages() {
     
     // Mark as read by clearing unread count when viewing
     if (unreadCounts[conversationId]) {
+      const count = unreadCounts[conversationId]
       setUnreadCounts((prev) => {
         const next = { ...prev }
         delete next[conversationId]
         return next
       })
+      // Also clear from global notification count
+      clearUnread(count)
     }
-  }
-
-  function calculateUnreadCount(conversationId, msgs) {
-    if (!msgs || msgs.length === 0) return 0
-    const lastReadIndex = messages.findIndex((m) => m.id === msgs[msgs.length - 1]?.id)
-    if (lastReadIndex === msgs.length - 1) return 0
-    return msgs.slice(lastReadIndex + 1).length
   }
 
   async function handleSearch() {
@@ -165,21 +212,42 @@ export function Messages() {
     }
   }, [activeId])
 
+  // Auto-clear unread count if the user returns to the tab and the conversation is active
+  useEffect(() => {
+    function handleRead() {
+      if (!document.hidden && activeId && unreadCounts[activeId]) {
+        const count = unreadCounts[activeId]
+        setUnreadCounts((prev) => {
+          const next = { ...prev }
+          delete next[activeId]
+          return next
+        })
+        clearUnread(count)
+      }
+    }
+    
+    handleRead()
+    document.addEventListener('visibilitychange', handleRead)
+    return () => document.removeEventListener('visibilitychange', handleRead)
+  }, [activeId, unreadCounts, clearUnread])
+
   useEffect(() => {
     const s = connectSocket()
     socketRef.current = s
 
     function onMessageNew(msg) {
-      if (msg?.conversationId !== activeId) {
-        // If not viewing this conversation, increment unread count
+      if (msg?.conversationId !== activeId || document.hidden) {
+        // If not viewing this conversation OR tab is hidden in background, increment unread count
         setUnreadCounts((prev) => ({
           ...prev,
           [msg?.conversationId]: (prev[msg?.conversationId] || 0) + 1,
         }))
-        return
       }
-      // If viewing, just add the message
-      setMessages((prev) => [...prev, msg])
+      
+      // If this message belongs to the active conversation, add it to the view
+      if (msg?.conversationId === activeId) {
+        setMessages((prev) => [...prev, msg])
+      }
     }
 
     function onConversationUpdated(update) {
@@ -233,7 +301,7 @@ export function Messages() {
     setCompose('')
     s.emit(
       'message:send',
-      { conversationId: activeId, content, messageType: composeType },
+      { conversationId: activeId, content, messageType: 'text' },
       (ack) => {
         if (!ack?.ok) {
           setError(ack?.error || 'Failed to send message.')
@@ -247,7 +315,7 @@ export function Messages() {
       <div className="pagehead">
         <h1>Messages</h1>
         <p className="muted">
-          Real-time communication hub for updates and sharing OA/Interview links.
+          Real-time communication hub — share links, updates, and more.
         </p>
       </div>
 
@@ -366,7 +434,7 @@ export function Messages() {
                 </div>
                 <div className="chat__itemSub muted">
                   {c.lastMessage
-                    ? `${messageBadge(c.lastMessage.messageType) ? `[${messageBadge(c.lastMessage.messageType)}] ` : ''}${c.lastMessage.content}`
+                    ? c.lastMessage.content
                     : 'No messages yet'}
                 </div>
               </button>
@@ -391,15 +459,13 @@ export function Messages() {
               <div className="chat__messages">
                 {messages.map((m) => {
                   const mine = m.sender?.id === user?.id
-                  const badge = messageBadge(m.messageType)
                   return (
                     <div key={m.id} className={`msg ${mine ? 'msg--mine' : 'msg--theirs'}`}>
                       <div className="msg__meta muted small">
                         {mine ? 'You' : m.sender?.name || m.sender?.email}
-                        {badge ? <span className="msg__badge">{badge}</span> : null}
                         <span className="msg__time">{formatTime(m.createdAt)}</span>
                       </div>
-                      <div className="msg__body">{m.content}</div>
+                      <div className="msg__body">{renderContentWithLinks(m.content)}</div>
                     </div>
                   )
                 })}
@@ -407,16 +473,6 @@ export function Messages() {
               </div>
 
               <form className="chat__composer" onSubmit={onSend}>
-                <select
-                  className="input"
-                  value={composeType}
-                  onChange={(e) => setComposeType(e.target.value)}
-                  aria-label="Message type"
-                >
-                  <option value="text">Text</option>
-                  <option value="oa_link">OA link</option>
-                  <option value="interview_link">Interview link</option>
-                </select>
                 <input
                   className="input"
                   value={compose}
@@ -434,4 +490,3 @@ export function Messages() {
     </div>
   )
 }
-
