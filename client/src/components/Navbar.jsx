@@ -101,6 +101,9 @@ export function Navbar() {
               >
                 {theme === 'light' ? '🌙' : '☀️'}
               </button>
+              <NavLink className="navlink" to="/features">
+                Features
+              </NavLink>
               <NavLink className="navlink" to="/login">
                 Login
               </NavLink>

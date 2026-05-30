@@ -6,6 +6,7 @@ import { GuestRoute } from './components/GuestRoute.jsx'
 import { HomeRedirect } from './components/HomeRedirect.jsx'
 import { ProtectedRoute } from './components/ProtectedRoute.jsx'
 import { Landing } from './pages/Landing.jsx'
+import { Features } from './pages/Features.jsx'
 import { Login } from './pages/Login.jsx'
 import { Register } from './pages/Register.jsx'
 import { CandidateDashboard } from './pages/CandidateDashboard.jsx'
@@ -24,6 +25,7 @@ function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<Landing />} />
+        <Route path="/features" element={<Features />} />
 
         <Route
           path="/login"
