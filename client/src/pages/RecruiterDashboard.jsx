@@ -29,7 +29,7 @@ export function RecruiterDashboard() {
     <div className="container page">
       <div className="page__header">
         <div>
-          <h1 className="h1">Recruiter dashboard</h1>
+          <h1 className="h1">Recruiter Dashboard</h1>
           <p className="muted">
             Welcome, {user?.name}
             {user?.company ? ` · ${user.company}` : ''}

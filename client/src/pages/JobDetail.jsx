@@ -4,7 +4,6 @@ import { Alert } from '../components/Alert.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
-  applyToJob,
   deleteJob,
   downloadResume,
   fetchJobApplications,
@@ -12,6 +11,9 @@ import {
   updateApplicationStatus,
   updateJob,
 } from '../services/api.js'
+
+import { ProfileSetupModal } from '../components/ProfileSetupModal.jsx'
+import { ApplyModal } from '../components/ApplyModal.jsx'
 import { formatJobType, formatDate } from '../utils/formatters.js'
 import apiMap from '../api.json'
 
@@ -21,11 +23,13 @@ export function JobDetail() {
   const { user } = useAuth()
   const [job, setJob] = useState(null)
   const [applications, setApplications] = useState([])
-  const [coverLetter, setCoverLetter] = useState('')
-  const [resumeFile, setResumeFile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [hasApplied, setHasApplied] = useState(false)
   const [message, setMessage] = useState('')
+  
+  const [showSetupModal, setShowSetupModal] = useState(false)
+  const [showApplyModal, setShowApplyModal] = useState(false)
 
   const postedById = job?.postedBy?._id || job?.postedBy
   const isOwner = Boolean(
@@ -70,23 +74,17 @@ export function JobDetail() {
     if (owner) loadApplications()
   }, [job, user, id])
 
-  async function handleApply(e) {
-    e.preventDefault()
-    setMessage('')
-    setError('')
-    try {
-      const formData = new FormData()
-      formData.append('jobId', id)
-      formData.append('coverLetter', coverLetter)
-      if (resumeFile) {
-        formData.append('resume', resumeFile)
-      }
-      await applyToJob(formData)
-      setMessage('Application submitted successfully.')
-      setCoverLetter('')
-      setResumeFile(null)
-    } catch (err) {
-      setError(err.message)
+  const handleApplyClick = () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    
+    // Check if profile is complete (has a headline)
+    if (!user.profile?.headline || !user.profile?.skills?.length) {
+      setShowSetupModal(true)
+    } else {
+      setShowApplyModal(true)
     }
   }
 
@@ -204,41 +202,28 @@ export function JobDetail() {
         </section>
 
         <aside className="stack">
-          {user?.role === 'candidate' && job.status === 'open' ? (
-            <form className="card" onSubmit={handleApply}>
-              <h2 className="h2">Apply</h2>
-              <label className="field">
-                <span className="field__label">Cover letter (optional)</span>
-                <textarea
-                  className="input textarea"
-                  rows={4}
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span className="field__label">Resume (PDF, optional)</span>
-                <div className="file-upload">
-                  <input
-                    id="resume-upload"
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                  />
-                  <label htmlFor="resume-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                    {resumeFile ? (
-                      <span className="resume-badge">📄 {resumeFile.name}</span>
-                    ) : (
-                      <span>Click to upload resume</span>
-                    )}
-                  </label>
-                </div>
-              </label>
-              <button className="btn btn--primary" type="submit">
-                Submit application
+          {user?.role === 'candidate' && job.status === 'open' && !hasApplied ? (
+            <div className="card section-gap stack" style={{ textAlign: 'center', padding: '32px' }}>
+              <h2 className="h2" style={{ marginBottom: '8px' }}>Ready to join?</h2>
+              <p className="muted" style={{ marginBottom: '24px' }}>
+                Take the next step in your career by applying to this position.
+              </p>
+              <button 
+                className="btn btn--primary" 
+                style={{ width: '100%', padding: '12px', fontSize: '16px' }}
+                onClick={handleApplyClick}
+              >
+                Apply Now ✨
               </button>
-            </form>
+            </div>
           ) : null}
+
+          {hasApplied && user?.role === 'candidate' && (
+            <div className="card section-gap stack" style={{ textAlign: 'center', padding: '32px', border: '1px solid var(--success-light)' }}>
+              <h2 className="h2" style={{ color: 'var(--success-dark)' }}>Applied Successfully!</h2>
+              <p className="muted">You have already submitted an application for this role.</p>
+            </div>
+          )}
 
           {isOwner ? (
             <section className="card">
@@ -287,6 +272,26 @@ export function JobDetail() {
           ) : null}
         </aside>
       </div>
+
+      <ProfileSetupModal
+        isOpen={showSetupModal}
+        onClose={() => setShowSetupModal(false)}
+        onComplete={() => {
+          setShowSetupModal(false)
+          setShowApplyModal(true)
+        }}
+      />
+
+      <ApplyModal
+        isOpen={showApplyModal}
+        onClose={() => setShowApplyModal(false)}
+        job={job}
+        onSuccess={() => {
+          setShowApplyModal(false)
+          setHasApplied(true)
+          setMessage('Application submitted successfully!')
+        }}
+      />
     </div>
   )
 }

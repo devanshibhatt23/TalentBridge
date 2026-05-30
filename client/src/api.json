@@ -27,6 +27,13 @@
         "path": "/auth/me",
         "auth": true,
         "description": "Current user profile"
+      },
+      "profile": {
+        "method": "PUT",
+        "path": "/auth/profile",
+        "auth": true,
+        "body": ["name", "phone", "company", "profile"],
+        "description": "Update user profile details"
       }
     },
     "jobs": {

@@ -93,6 +93,11 @@ export async function fetchMe() {
   return data
 }
 
+export async function updateProfile(payload) {
+  const { data } = await api.put(endpointPath('auth', 'profile'), payload)
+  return data
+}
+
 // --- Jobs ---
 export async function fetchJobs(params) {
   const { data } = await api.get(endpointPath('jobs', 'list'), { params })

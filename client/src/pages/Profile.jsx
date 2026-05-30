@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Alert } from '../components/Alert.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { formatStatus } from '../utils/formatters.js'
+import { ProfileSetupModal } from '../components/ProfileSetupModal.jsx'
 
 export function Profile() {
   const { user, refreshUser } = useAuth()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showSetup, setShowSetup] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -63,13 +65,62 @@ export function Profile() {
           )}
         </section>
 
-        <section className="card">
-          <h2 className="h2">Coming Soon</h2>
-          <p className="muted">
-            We are working on adding more features to your profile. Soon you'll be able to update your skills, upload multiple resumes, and manage your portfolio directly from here.
-          </p>
-        </section>
+        {user?.role === 'candidate' ? (
+          <section className="card">
+            <div className="card__header-row">
+              <h2 className="h2">Candidate Profile</h2>
+              <button 
+                className="btn btn--ghost"
+                onClick={() => setShowSetup(true)}
+              >
+                Edit
+              </button>
+            </div>
+            
+            <dl className="detail-list">
+              <dt>Headline</dt>
+              <dd>{user.profile?.headline || <span className="muted">Not provided</span>}</dd>
+              
+              <dt>Skills</dt>
+              <dd>
+                {user.profile?.skills?.length ? (
+                  <div className="tags" style={{ marginTop: '4px' }}>
+                    {user.profile.skills.map((skill, i) => (
+                      <span key={i} className="tag">{skill}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="muted">No skills added</span>
+                )}
+              </dd>
+
+              <dt>Bio</dt>
+              <dd>{user.profile?.bio || <span className="muted">Not provided</span>}</dd>
+              
+              <dt>Experience</dt>
+              <dd>{user.profile?.experience || <span className="muted">Not provided</span>}</dd>
+              
+              <dt>Education</dt>
+              <dd>{user.profile?.education || <span className="muted">Not provided</span>}</dd>
+            </dl>
+          </section>
+        ) : (
+          <section className="card">
+            <h2 className="h2">Recruiter Info</h2>
+            <p className="muted">
+              You are signed in as a Recruiter for <strong>{user?.company}</strong>.
+            </p>
+          </section>
+        )}
       </div>
+
+      {showSetup && (
+        <ProfileSetupModal 
+          isOpen={showSetup} 
+          onClose={() => setShowSetup(false)} 
+          onComplete={() => setShowSetup(false)} 
+        />
+      )}
     </div>
   )
 }

@@ -5,6 +5,7 @@ import {
   fetchMe,
   loginUser,
   registerUser,
+  updateProfile as updateProfileApi,
   setStoredToken,
   getStoredToken,
 } from '../services/api.js'
@@ -86,6 +87,14 @@ export function AuthProvider({ children }) {
     setError(null)
   }, [])
 
+  const updateProfile = useCallback(async (payload) => {
+    setError(null)
+    const res = await updateProfileApi(payload)
+    const normalized = normalizeUser(res.data?.user)
+    setUser(normalized)
+    return normalized
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -96,10 +105,11 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      updateProfile,
       refreshUser: loadSession,
       dashboardPath: user ? dashboardPathForRole(user.role) : '/login',
     }),
-    [user, loading, error, login, register, logout, loadSession],
+    [user, loading, error, login, register, logout, updateProfile, loadSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

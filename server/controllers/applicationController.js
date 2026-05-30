@@ -20,6 +20,13 @@ const applyToJob = async (req, res) => {
       });
     }
 
+    if (!req.file || req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({
+        success: false,
+        message: 'A resume (PDF) is required to apply for this job.',
+      });
+    }
+
     // Check if the job exists
     const job = await Job.findById(jobId);
     if (!job) {

@@ -7,7 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe } = require('../controllers/authController');
+const { register, login, getMe, updateProfile } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
 // POST /api/auth/register
@@ -23,5 +23,9 @@ router.post('/login', login);
 // Notice we pass the 'auth' middleware BEFORE 'getMe'
 // This ensures only logged-in users can access this route
 router.get('/me', auth, getMe);
+
+// PUT /api/auth/profile
+// Route to update user profile
+router.put('/profile', auth, updateProfile);
 
 module.exports = router;
