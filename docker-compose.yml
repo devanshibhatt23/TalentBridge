@@ -5,39 +5,16 @@ services:
     command: sh -c "npm install && node server.js"
     ports:
       - "5000:5000"
-    environment:
-      PORT: 5000
-      # Use your Atlas URL by running: export MONGO_URI="mongodb+srv://..."
-      # If you do not set it, Docker will use the local Mongo container address.
-      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/app}
-      NODE_ENV: development
+    env_file:
+      - ./server/.env
     volumes:
       - ./server:/app
-    depends_on:
-      - mongo
-
-  mongo:
-    image: mongo:7.0
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    environment:
-      MONGO_INITDB_DATABASE: app
-
+    
   client:
     image: node:20-alpine
     working_dir: /app
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
       - "5173:5173"
-    environment:
-      # In dev, the browser can reach the backend through localhost:5000
-      # because the server is published to the host machine.
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
     volumes:
       - ./client:/app
-
-volumes:
-  mongo-data:

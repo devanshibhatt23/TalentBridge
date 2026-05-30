@@ -5,6 +5,7 @@ import { AppLayout } from './components/AppLayout.jsx'
 import { GuestRoute } from './components/GuestRoute.jsx'
 import { HomeRedirect } from './components/HomeRedirect.jsx'
 import { ProtectedRoute } from './components/ProtectedRoute.jsx'
+import { Landing } from './pages/Landing.jsx'
 import { Login } from './pages/Login.jsx'
 import { Register } from './pages/Register.jsx'
 import { CandidateDashboard } from './pages/CandidateDashboard.jsx'
@@ -22,7 +23,7 @@ function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route index element={<HomeRedirect />} />
+        <Route index element={<Landing />} />
 
         <Route
           path="/login"

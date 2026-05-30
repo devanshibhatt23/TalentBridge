@@ -1,0 +1,5 @@
+- The job search filter based on the Job Type (full-time, part-time, contract) doesnt work on http://localhost:5173/jobs, I mean I need to press search button, so make it user interactive please, also try to improve the UX of this page, like API call on selection without need to press search, remove the search button in itself
+
+- the UI of recent applications seems to not cool, theres bug in UI of it
+
+- And I dont like the overall colors of the website, like can you please improve it wherever you think its good to have
