@@ -110,6 +110,20 @@
         "auth": true,
         "roles": ["recruiter", "candidate"],
         "description": "Download the resume attached to an application"
+      },
+      "resumeInfo": {
+        "method": "GET",
+        "path": "/applications/:id/resume-info",
+        "auth": true,
+        "roles": ["recruiter", "candidate"],
+        "description": "Get resume metadata without downloading"
+      },
+      "updateResume": {
+        "method": "PUT",
+        "path": "/applications/:id/resume",
+        "auth": true,
+        "roles": ["candidate"],
+        "description": "Update/replace resume for an application"
       }
     },
     "candidates": {

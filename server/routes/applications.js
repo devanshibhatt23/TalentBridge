@@ -7,6 +7,8 @@ const {
   getJobApplications,
   updateApplicationStatus,
   downloadResume,
+  getResumeInfo,
+  updateResume,
 } = require('../controllers/applicationController');
 
 // Import middleware
@@ -40,6 +42,13 @@ router.get('/my-applications', auth, roleCheck('candidate'), getMyApplications);
 // Authenticated recruiter or candidate can download the resume
 router.get('/:id/resume', auth, downloadResume);
 
+// GET /api/applications/:id/resume-info
+// Get resume metadata without downloading the actual file
+router.get('/:id/resume-info', auth, getResumeInfo);
+
+// PUT /api/applications/:id/resume
+// Candidates can update their resume for an application
+router.put('/:id/resume', auth, roleCheck('candidate'), upload.single('resume'), updateResume);
 
 // ============================================
 // RECRUITER ROUTES

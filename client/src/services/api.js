@@ -154,6 +154,22 @@ export async function updateApplicationStatus(id, payload) {
   return data
 }
 
+export async function getResumeInfo(applicationId) {
+  const { data } = await api.get(endpointPath('applications', 'resumeInfo', { id: applicationId }))
+  return data
+}
+
+export async function updateResume(applicationId, file) {
+  const formData = new FormData()
+  formData.append('resume', file)
+  const { data } = await api.put(
+    endpointPath('applications', 'updateResume', { id: applicationId }),
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return data
+}
+
 // --- Candidates ---
 export async function searchCandidates(params) {
   const { data } = await api.get(endpointPath('candidates', 'search'), { params })

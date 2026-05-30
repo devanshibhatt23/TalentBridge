@@ -329,10 +329,157 @@ const downloadResume = async (req, res) => {
   }
 };
 
+// ============================================
+// GET RESUME INFO — Get resume metadata without data
+// ============================================
+// GET /api/applications/:id/resume-info
+// ============================================
+const getResumeInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const application = await Application.findById(id).populate('job');
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found.',
+      });
+    }
+
+    // Check access permissions
+    if (req.user.role === 'recruiter') {
+      if (application.job.postedBy.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only view resume info for jobs you posted.',
+        });
+      }
+    } else if (req.user.role === 'candidate') {
+      if (application.candidate.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only view your own resume info.',
+        });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied.',
+      });
+    }
+
+    if (!application.resume) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resume not found for this application.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        resume: {
+          filename: application.resume.filename,
+          contentType: application.resume.contentType,
+          size: application.resume.size,
+          uploadedAt: application.resume.uploadedAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Get resume info error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching resume info.',
+      error: error.message,
+    });
+  }
+};
+
+// ============================================
+// UPDATE RESUME — Candidate updates their resume for an application
+// ============================================
+// PUT /api/applications/:id/resume
+// Only candidates can update their own resume
+// ============================================
+const updateResume = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Only candidates can update resume
+    if (req.user.role !== 'candidate') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only candidates can update their resume.',
+      });
+    }
+
+    // Must have a file
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Resume file is required.',
+      });
+    }
+
+    const application = await Application.findById(id);
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found.',
+      });
+    }
+
+    // Verify the candidate owns this application
+    if (application.candidate.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only update your own resume.',
+      });
+    }
+
+    // Update the resume
+    application.resume = {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      size: req.file.size,
+      data: req.file.buffer,
+      uploadedAt: new Date(),
+    };
+
+    await application.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Resume updated successfully!',
+      data: {
+        application: {
+          _id: application._id,
+          resume: {
+            filename: application.resume.filename,
+            contentType: application.resume.contentType,
+            size: application.resume.size,
+            uploadedAt: application.resume.uploadedAt,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Update resume error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating resume.',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   applyToJob,
   getMyApplications,
   getJobApplications,
   updateApplicationStatus,
   downloadResume,
+  getResumeInfo,
+  updateResume,
 };
