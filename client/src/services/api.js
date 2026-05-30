@@ -21,14 +21,29 @@ export function clearApiCache() {
   cache.clear()
 }
 
+export function readApiCache(group, name, params = {}) {
+  try {
+    const url = endpointPath(group, name, params)
+    const key = url + JSON.stringify(params)
+    const cached = cache.get(key)
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
 
-  if (config.method !== 'get') {
+  if (config.method?.toLowerCase() !== 'get') {
     // If it's a POST/PUT/DELETE, clear cache to ensure fresh data
+    console.log('[API] Clearing cache due to mutation:', config.method, config.url)
     cache.clear()
   }
 
@@ -42,9 +57,11 @@ api.get = async function (url, config = {}) {
   const cached = cache.get(key)
 
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log('[API] Cache HIT:', key)
     return Promise.resolve({ data: cached.data, status: 200, statusText: 'OK', config })
   }
 
+  console.log('[API] Cache MISS:', key)
   const response = await originalGet.call(api, url, config)
   cache.set(key, { data: response.data, timestamp: Date.now() })
   return response

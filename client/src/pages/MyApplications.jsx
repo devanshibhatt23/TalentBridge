@@ -4,17 +4,20 @@ import { Alert } from '../components/Alert.jsx'
 import { ApplicationDetail } from '../components/ApplicationDetail.jsx'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 import { Spinner } from '../components/Spinner.jsx'
-import { fetchMyApplications } from '../services/api.js'
+import { fetchMyApplications, readApiCache } from '../services/api.js'
 import { getSocket } from '../socket.js'
 
 export function MyApplications() {
-  const [applications, setApplications] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [applications, setApplications] = useState(() => readApiCache('applications', 'myApplications')?.data?.applications || [])
+  const [loading, setLoading] = useState(() => !readApiCache('applications', 'myApplications'))
   const [error, setError] = useState('')
   const [selectedApp, setSelectedApp] = useState(null)
 
   useEffect(() => {
     async function load() {
+      if (!readApiCache('applications', 'myApplications')) {
+        setLoading(true)
+      }
       try {
         const res = await fetchMyApplications()
         setApplications(res.data?.applications || [])

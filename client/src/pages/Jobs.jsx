@@ -3,7 +3,7 @@ import { JobCard } from '../components/JobCard.jsx'
 import { SearchBar } from '../components/SearchBar.jsx'
 import { Alert } from '../components/Alert.jsx'
 import { Spinner } from '../components/Spinner.jsx'
-import { fetchJobs } from '../services/api.js'
+import { fetchJobs, readApiCache } from '../services/api.js'
 import { formatJobType } from '../utils/formatters.js'
 import apiMap from '../api.json'
 
@@ -11,22 +11,27 @@ export function Jobs() {
   const [keyword, setKeyword] = useState('')
   const [location, setLocation] = useState('')
   const [jobType, setJobType] = useState('')
-  const [jobs, setJobs] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const defaultParams = { page: 1, limit: 10 }
+  const [jobs, setJobs] = useState(() => readApiCache('jobs', 'list', defaultParams)?.data?.jobs || [])
+  const [pagination, setPagination] = useState(() => readApiCache('jobs', 'list', defaultParams)?.data?.pagination || null)
+  const [loading, setLoading] = useState(() => !readApiCache('jobs', 'list', defaultParams))
   const [error, setError] = useState('')
 
   async function load(page = 1) {
-    setLoading(true)
+    const params = {
+      keyword: keyword || undefined,
+      location: location || undefined,
+      jobType: jobType || undefined,
+      page,
+      limit: 10,
+    }
+    
+    if (!readApiCache('jobs', 'list', params)) {
+      setLoading(true)
+    }
     setError('')
     try {
-      const res = await fetchJobs({
-        keyword: keyword || undefined,
-        location: location || undefined,
-        jobType: jobType || undefined,
-        page,
-        limit: 10,
-      })
+      const res = await fetchJobs(params)
       setJobs(res.data?.jobs || [])
       setPagination(res.data?.pagination)
     } catch (err) {

@@ -6,6 +6,7 @@ import {
   fetchConversations,
   getOrCreateConversation,
   searchUsers,
+  readApiCache
 } from '../services/api.js'
 import { connectSocket } from '../socket.js'
 
@@ -63,8 +64,8 @@ function renderContentWithLinks(content) {
 export function Messages() {
   const { user } = useAuth()
   const { setActiveConversation, clearUnread, resetUnread } = useNotifications()
-  const [loading, setLoading] = useState(true)
-  const [conversations, setConversations] = useState([])
+  const [conversations, setConversations] = useState(() => readApiCache('conversations', 'list')?.data?.conversations || [])
+  const [loading, setLoading] = useState(() => !readApiCache('conversations', 'list'))
   const [activeId, setActiveId] = useState(null)
   const [messages, setMessages] = useState([])
   const [compose, setCompose] = useState('')
@@ -182,7 +183,7 @@ export function Messages() {
     let mounted = true
     ;(async () => {
       try {
-        setLoading(true)
+        if (!readApiCache('conversations', 'list')) setLoading(true)
         setError(null)
         await loadConversations(true)
       } catch (e) {

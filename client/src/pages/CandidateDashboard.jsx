@@ -5,17 +5,23 @@ import { StatusBadge } from '../components/StatusBadge.jsx'
 import { JobCard } from '../components/JobCard.jsx'
 import { Spinner } from '../components/Spinner.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
-import { fetchJobs, fetchMyApplications } from '../services/api.js'
+import { fetchJobs, fetchMyApplications, readApiCache } from '../services/api.js'
 
 export function CandidateDashboard() {
   const { user } = useAuth()
-  const [applications, setApplications] = useState([])
-  const [recommended, setRecommended] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [applications, setApplications] = useState(() => readApiCache('applications', 'myApplications')?.data?.applications || [])
+  const defaultJobsParams = { limit: 4, sortBy: 'createdAt', order: 'desc' }
+  const [recommended, setRecommended] = useState(() => readApiCache('jobs', 'list', defaultJobsParams)?.data?.jobs || [])
+  const [loading, setLoading] = useState(() => {
+    return !readApiCache('applications', 'myApplications') || !readApiCache('jobs', 'list', defaultJobsParams)
+  })
   const [error, setError] = useState('')
 
   useEffect(() => {
     async function load() {
+      if (!readApiCache('applications', 'myApplications') || !readApiCache('jobs', 'list', defaultJobsParams)) {
+        setLoading(true)
+      }
       try {
         const [appsRes, jobsRes] = await Promise.all([
           fetchMyApplications(),
