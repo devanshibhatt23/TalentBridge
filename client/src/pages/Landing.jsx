@@ -53,19 +53,20 @@ export function Landing() {
         position: 'relative',
         zIndex: 1,
         minHeight: 0,
+        marginTop: '-40px',
       }}>
         <div style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '8px',
-          padding: '7px 18px',
+          padding: '6px 16px',
           background: 'var(--panel)',
           border: '1px solid rgba(249, 115, 22, 0.3)',
           borderRadius: '999px',
           color: '#f97316',
           fontSize: '13px',
           fontWeight: 700,
-          marginBottom: '24px',
+          marginBottom: '20px',
           boxShadow: '0 4px 20px rgba(249, 115, 22, 0.15)',
           backdropFilter: 'blur(12px)',
         }}>
@@ -75,7 +76,7 @@ export function Landing() {
         <h1 style={{
           fontSize: 'clamp(36px, 5vw, 64px)',
           maxWidth: '820px',
-          margin: '0 0 18px 0',
+          margin: '0 0 16px 0',
           lineHeight: 1.1,
           letterSpacing: '-0.03em',
           fontWeight: 700,
@@ -94,7 +95,7 @@ export function Landing() {
         <p style={{
           fontSize: 'clamp(15px, 1.6vw, 18px)',
           maxWidth: '560px',
-          margin: '0 0 32px 0',
+          margin: '0 0 28px 0',
           lineHeight: 1.6,
           color: 'var(--muted)',
         }}>
@@ -103,7 +104,7 @@ export function Landing() {
 
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link to="/register" className="btn" style={{
-            padding: '13px 30px',
+            padding: '12px 28px',
             fontSize: '15px',
             borderRadius: '12px',
             background: 'linear-gradient(135deg, #f97316 0%, #eab308 100%)',
@@ -115,7 +116,7 @@ export function Landing() {
             Get Started Free
           </Link>
           <Link to="/login" className="btn" style={{
-            padding: '13px 30px',
+            padding: '12px 28px',
             fontSize: '15px',
             borderRadius: '12px',
             background: 'var(--panel)',
@@ -137,11 +138,13 @@ export function Landing() {
       `}</style>
       <section style={{
         borderTop: '1px solid var(--border)',
-        padding: '24px 0',
+        padding: '28px 0 32px',
         overflow: 'hidden',
         flexShrink: 0,
         position: 'relative',
         zIndex: 1,
+        background: 'rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(100px)',
       }}>
         <p style={{
           fontSize: '11px',
@@ -149,39 +152,41 @@ export function Landing() {
           textTransform: 'uppercase',
           letterSpacing: '2px',
           color: 'var(--muted)',
-          opacity: 0.45,
+          opacity: 0.5,
           textAlign: 'center',
-          marginBottom: '16px',
+          marginBottom: '60px',
         }}>
           Trusted by the next generation of startups
         </p>
         <div style={{
           overflow: 'hidden',
-          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-          maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
         }}>
           <div style={{
+            marginBottom: '40px',
             display: 'flex',
-            gap: '48px',
+            gap: '64px',
             width: 'max-content',
-            animation: 'marquee 20s linear infinite',
+            animation: 'marquee 25s linear infinite',
             alignItems: 'center',
+            paddingLeft: '64px',
           }}>
             {[...Array(2)].flatMap((_, i) =>
-              ['Acme Corp', 'Globex', 'Soylent', 'Initech', 'Umbrella'].map(company => (
+              ['Acme Corp', 'Globex', 'Soylent', 'Initech', 'Quicko', 'Umbrella', 'Sarvam'].map(company => (
                 <span key={`${i}-${company}`} style={{
-                  fontSize: '17px',
+                  fontSize: '18px',
                   fontWeight: 700,
                   color: 'var(--muted)',
-                  opacity: 0.65,
+                  opacity: 0.7,
                   whiteSpace: 'nowrap',
                   fontFamily: 'inherit',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '48px',
+                  gap: '64px',
                 }}>
                   {company}
-                  <span style={{ opacity: 0.3, fontSize: '18px' }}>·</span>
+                  <span style={{ opacity: 0.3, fontSize: '20px' }}>·</span>
                 </span>
               ))
             )}
