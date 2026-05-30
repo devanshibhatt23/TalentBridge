@@ -5,7 +5,7 @@ import { ProfileMenu } from './ProfileMenu.jsx'
 
 export function Navbar() {
   const navigate = useNavigate()
-  const { user, isAuthenticated, dashboardPath, logout } = useAuth()
+  const { user, isAuthenticated, loading, dashboardPath, logout } = useAuth()
   const { totalUnread } = useNotifications()
 
   function onSignOut() {
@@ -43,7 +43,9 @@ export function Navbar() {
         </div>
 
         <nav className="nav__right" aria-label="Primary">
-          {isAuthenticated ? (
+          {loading ? (
+            <div style={{ width: '150px', height: '36px', opacity: 0.5, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}></div>
+          ) : isAuthenticated ? (
             <>
               <NavLink className="navlink" to={dashboardPath}>
                 Dashboard
