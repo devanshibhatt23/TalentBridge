@@ -27,6 +27,11 @@
   --warning-dim: rgba(245, 158, 11, 0.12);
   --danger: #ef4444;
   --danger-dim: rgba(239, 68, 68, 0.10);
+  /* Success / green */
+  --success-dark: #6ee7b7;
+  /* Emerald */
+  --success-light: rgba(16, 185, 129, 0.12);
+  --success-dim: rgba(16, 185, 129, 0.08);
 
   --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 4px 10px -2px rgba(0, 0, 0, 0.2);
   --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.2);
@@ -62,7 +67,12 @@
   --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
   --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.03);
   --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.15);
-  
+  /* Stronger green for light theme (clearer in bright backgrounds) */
+  --success-dark: #10b981;
+  /* Emerald-500 */
+  --success-light: rgba(16, 185, 129, 0.15);
+  --success-dim: rgba(16, 185, 129, 0.06);
+
   color-scheme: light;
 }
 
@@ -94,7 +104,12 @@ body {
 }
 
 /* Base transition for themable properties */
-.card, .btn, .input, .nav, .modal-content, article {
+.card,
+.btn,
+.input,
+.nav,
+.modal-content,
+article {
   transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
 }
 
@@ -787,6 +802,7 @@ select.input {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .page__footer {
@@ -923,8 +939,7 @@ select.input {
   white-space: nowrap;
 }
 
-.status--applied,
-.status--open {
+.status--applied {
   background: rgba(139, 92, 246, 0.15);
   border-color: rgba(139, 92, 246, 0.40);
   color: #c4b5fd;
@@ -938,10 +953,11 @@ select.input {
 }
 
 .status--offered,
-.status--hired {
-  background: rgba(16, 185, 129, 0.15);
+.status--hired,
+.status--open {
+  background: var(--success-light);
   border-color: rgba(16, 185, 129, 0.40);
-  color: #6ee7b7;
+  color: var(--success-dark);
 }
 
 .status--rejected,
@@ -970,9 +986,9 @@ select.input {
 }
 
 .alert--success {
-  border: 1px solid rgba(63, 185, 80, 0.35);
-  background: rgba(63, 185, 80, 0.08);
-  color: #7ee787;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: var(--success-dim);
+  color: var(--success-dark);
 }
 
 /* ============================================
