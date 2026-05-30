@@ -27,6 +27,19 @@
         "path": "/auth/me",
         "auth": true,
         "description": "Current user profile"
+      },
+      "profile": {
+        "method": "PUT",
+        "path": "/auth/profile",
+        "auth": true,
+        "body": ["name", "phone", "company", "profile"],
+        "description": "Update user profile details"
+      },
+      "avatar": {
+        "method": "PUT",
+        "path": "/auth/avatar",
+        "auth": true,
+        "description": "Update user avatar (multipart/form-data)"
       }
     },
     "jobs": {
