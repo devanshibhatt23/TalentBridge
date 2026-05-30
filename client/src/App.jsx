@@ -42,8 +42,22 @@ function App() {
           }
         />
 
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route
+          path="/jobs"
+          element={
+            <ProtectedRoute>
+              <Jobs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jobs/:id"
+          element={
+            <ProtectedRoute>
+              <JobDetail />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/jobs/new"
