@@ -1,12 +1,14 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useNotifications } from '../context/NotificationContext.jsx'
+import { useTheme } from '../context/ThemeContext.jsx'
 import { ProfileMenu } from './ProfileMenu.jsx'
 
 export function Navbar() {
   const navigate = useNavigate()
   const { user, isAuthenticated, loading, dashboardPath, logout } = useAuth()
   const { totalUnread } = useNotifications()
+  const { theme, toggleTheme } = useTheme()
 
   function onSignOut() {
     logout()
@@ -47,6 +49,14 @@ export function Navbar() {
             <div style={{ width: '150px', height: '36px', opacity: 0.5, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}></div>
           ) : isAuthenticated ? (
             <>
+              <button 
+                onClick={toggleTheme} 
+                className="btn btn--icon" 
+                aria-label="Toggle theme"
+                style={{ background: 'transparent', border: '1px solid var(--border)', padding: '8px', borderRadius: '50%', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
               <NavLink className="navlink" to={dashboardPath}>
                 Dashboard
               </NavLink>
@@ -83,6 +93,14 @@ export function Navbar() {
             </>
           ) : (
             <>
+              <button 
+                onClick={toggleTheme} 
+                className="btn btn--icon" 
+                aria-label="Toggle theme"
+                style={{ background: 'transparent', border: '1px solid var(--border)', padding: '8px', borderRadius: '50%', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
               <NavLink className="navlink" to="/jobs">
                 Jobs
               </NavLink>

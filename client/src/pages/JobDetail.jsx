@@ -17,6 +17,7 @@ import { ProfileSetupModal } from '../components/ProfileSetupModal.jsx'
 import { ApplyModal } from '../components/ApplyModal.jsx'
 import { Spinner } from '../components/Spinner.jsx'
 import { formatJobType, formatDate } from '../utils/formatters.js'
+import confetti from 'canvas-confetti'
 import apiMap from '../api.json'
 
 export function JobDetail() {
@@ -144,6 +145,18 @@ export function JobDetail() {
   const handleDragStart = (e, appId) => {
     e.dataTransfer.setData('applicationId', appId)
     e.dataTransfer.effectAllowed = 'move'
+    // Give browser time to capture the ghost image before changing styles
+    setTimeout(() => {
+      e.target.style.opacity = '0.5'
+      e.target.style.transform = 'rotate(2deg) scale(0.95)'
+      e.target.style.boxShadow = 'var(--shadow-glow)'
+    }, 0)
+  }
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1'
+    e.target.style.transform = 'none'
+    e.target.style.boxShadow = 'var(--shadow-sm)'
   }
 
   const handleDragOver = (e) => {
@@ -303,7 +316,7 @@ export function JobDetail() {
                     style={{ 
                       minWidth: '300px', 
                       flex: '0 0 auto', 
-                      background: 'rgba(255,255,255,0.02)', 
+                      background: 'var(--panel)', 
                       borderRadius: '16px', 
                       padding: '16px', 
                       border: '1px solid var(--border)',
@@ -323,7 +336,15 @@ export function JobDetail() {
                           className="card" 
                           draggable
                           onDragStart={(e) => handleDragStart(e, app._id)}
-                          style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderLeft: `4px solid ${getStatusColor(app.status)}`, cursor: 'grab' }}
+                          onDragEnd={handleDragEnd}
+                          style={{ 
+                            padding: '16px', 
+                            background: 'var(--panel-strong)', 
+                            borderLeft: `4px solid ${getStatusColor(app.status)}`, 
+                            cursor: 'grab',
+                            transition: 'all 0.2s ease',
+                            boxShadow: 'var(--shadow-sm)'
+                          }}
                         >
                           <div style={{ marginBottom: '12px' }}>
                             <strong style={{ fontSize: '16px', color: 'var(--text)' }}>{app.candidate?.name}</strong>
@@ -388,6 +409,12 @@ export function JobDetail() {
         onSuccess={() => {
           setShowApplyModal(false)
           setHasApplied(true)
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#8b5cf6', '#f43f5e', '#ffffff']
+          })
           addToast('success', 'Application Submitted', 'Your application has been sent successfully!')
         }}
       />
