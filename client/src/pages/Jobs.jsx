@@ -36,8 +36,18 @@ export function Jobs() {
   }
 
   useEffect(() => {
+    // Initial load
     load()
   }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Re-load when filters change, reset to page 1
+      load(1)
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timer)
+  }, [keyword, location, jobType])
 
   return (
     <div className="container page">
@@ -52,7 +62,6 @@ export function Jobs() {
         <SearchBar
           keyword={keyword}
           onKeywordChange={setKeyword}
-          onSubmit={() => load(1)}
           placeholder="Keyword (title, skills, company…)"
         >
           <input

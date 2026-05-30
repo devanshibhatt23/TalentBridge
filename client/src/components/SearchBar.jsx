@@ -1,18 +1,11 @@
 export function SearchBar({
   keyword,
   onKeywordChange,
-  onSubmit,
   placeholder = 'Search…',
   children,
 }) {
   return (
-    <form
-      className="searchbar"
-      onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit?.()
-      }}
-    >
+    <div className="searchbar">
       <input
         className="input"
         type="search"
@@ -21,9 +14,6 @@ export function SearchBar({
         placeholder={placeholder}
       />
       {children}
-      <button className="btn btn--primary" type="submit">
-        Search
-      </button>
-    </form>
+    </div>
   )
 }
