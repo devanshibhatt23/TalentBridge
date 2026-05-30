@@ -11,6 +11,7 @@ import {
   fetchJobById,
   updateApplicationStatus,
   updateJob,
+  readApiCache,
 } from '../services/api.js'
 
 import { ProfileSetupModal } from '../components/ProfileSetupModal.jsx'
@@ -26,8 +27,15 @@ export function JobDetail() {
   const { user } = useAuth()
   const { addToast } = useNotifications()
   const [job, setJob] = useState(null)
-  const [applications, setApplications] = useState([])
+  
+  const [applications, setApplications] = useState(() => {
+    return readApiCache('applications', 'jobApplications', { jobId: id })?.data?.applications || []
+  })
+  
   const [loading, setLoading] = useState(true)
+  const [loadingApps, setLoadingApps] = useState(() => {
+    return !readApiCache('applications', 'jobApplications', { jobId: id })
+  })
   const [error, setError] = useState('')
   const [hasApplied, setHasApplied] = useState(false)
   
@@ -57,11 +65,14 @@ export function JobDetail() {
 
   async function loadApplications() {
     if (!isOwner) return
+    setLoadingApps(true)
     try {
       const res = await fetchJobApplications(id)
       setApplications(res.data?.applications || [])
     } catch (err) {
       setError(err.message)
+    } finally {
+      setLoadingApps(false)
     }
   }
 
@@ -300,7 +311,11 @@ export function JobDetail() {
       {isOwner ? (
         <section className="card section-gap" style={{ marginTop: '24px' }}>
           <h2 className="h2" style={{ marginBottom: '16px' }}>Applications Board ({applications.length})</h2>
-          {applications.length === 0 ? (
+          {loadingApps ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+              <Spinner message="Loading applications..." />
+            </div>
+          ) : applications.length === 0 ? (
             <p className="muted">No applications yet.</p>
           ) : (
             <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }}>
